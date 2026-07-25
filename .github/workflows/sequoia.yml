@@ -18,7 +18,11 @@ jobs:
         run: git clone --depth=1 https://github.com/acidanthera/MacKernelSDK.git
 
       - name: Generate Xcode project
-        run: xcodegen -s project_sequoia.yml
+        run: |
+          xcodegen -s project_sequoia.yml
+          # xcodegen не умеет product-type kernel-extension; bundle линкуется через clang++
+          # и тянет -stdlib=libc++, чего в kext нет. Патчим тип продукта как у itlwm.
+          sed -i '' 's/com\.apple\.product-type\.bundle/com.apple.product-type.kernel-extension/' AirportSequoia.xcodeproj/project.pbxproj
 
       - name: Build kext
         run: xcodebuild -project AirportSequoia.xcodeproj -scheme AirportSequoia -configuration Debug -derivedDataPath build
