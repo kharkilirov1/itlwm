@@ -14,7 +14,10 @@ targets:
           - "pm.cpp"
           - "ItlNetworkUserClient.cpp"
           - "firmware/**"
+          - "Info.plist"
       - path: itl80211
+        excludes:
+          - "Info.plist"
       - path: include/FwBinary.cpp
         optional: true
     settings:
