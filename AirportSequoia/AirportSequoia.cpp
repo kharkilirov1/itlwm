@@ -7,7 +7,6 @@
 #include <IOKit/IOLib.h>
 #include <IOKit/IOWorkLoop.h>
 
-#define super IO80211Controller
 OSDefineMetaClassAndStructors(AirportSequoia, IO80211Controller)
 OSDefineMetaClassAndStructors(AirportSequoiaInfra, IO80211InfraInterface)
 
@@ -20,7 +19,7 @@ OSDefineMetaClassAndStructors(AirportSequoiaInfra, IO80211InfraInterface)
 
 void AirportSequoiaInfra::free() {
     DRVLOG("infra interface free");
-    super::free();
+    IO80211InfraInterface::free();
 }
 
 // ---------------------------------------------------------------------------
@@ -29,12 +28,12 @@ void AirportSequoiaInfra::free() {
 
 IOService * AirportSequoia::probe(IOService *provider, SInt32 *score) {
     DRVLOG("probe");
-    return super::probe(provider, score);
+    return IO80211Controller::probe(provider, score);
 }
 
 bool AirportSequoia::start(IOService *provider) {
     DRVLOG("start");
-    if (!super::start(provider)) {
+    if (!IO80211Controller::start(provider)) {
         DRVERR("IO80211Controller::start failed");
         return false;
     }
@@ -70,10 +69,10 @@ void AirportSequoia::stop(IOService *provider) {
         fPCIDevice->release();
         fPCIDevice = nullptr;
     }
-    super::stop(provider);
+    IO80211Controller::stop(provider);
 }
 
 void AirportSequoia::free() {
     DRVLOG("free");
-    super::free();
+    IO80211Controller::free();
 }
