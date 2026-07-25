@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>AirportSequoia</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.openintelwireless.AirportSequoia</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>AirportSequoia</string>
+	<key>CFBundlePackageType</key>
+	<string>KEXT</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>IOKitPersonalities</key>
+	<dict>
+		<key>AirportSequoia</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.openintelwireless.AirportSequoia</string>
+			<key>CFBundleIdentifierKernel</key>
+			<string>com.openintelwireless.AirportSequoia</string>
+			<key>IOClass</key>
+			<string>AirportSequoia</string>
+			<key>IONameMatch</key>
+			<array>
+				<string>pci8086,2723</string>
+				<string>pci8086,43f0</string>
+				<string>pci8086,2725</string>
+				<string>pci8086,51f0</string>
+				<string>pci8086,54f0</string>
+				<string>pci8086,7af0</string>
+				<string>pci8086,7a70</string>
+			</array>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
+	</dict>
+	<key>OSBundleLibraries</key>
+	<dict>
+		<key>com.apple.iokit.IO80211Family</key>
+		<string>1.0</string>
+		<key>com.apple.iokit.IONetworkingFamily</key>
+		<string>1.0</string>
+		<key>com.apple.iokit.IOPCIFamily</key>
+		<string>1.0</string>
+		<key>com.apple.iokit.IOSkywalkFamily</key>
+		<string>1.0</string>
+		<key>com.apple.kpi.bsd</key>
+		<string>20.0.0</string>
+		<key>com.apple.kpi.iokit</key>
+		<string>20.0.0</string>
+		<key>com.apple.kpi.libkern</key>
+		<string>20.0.0</string>
+		<key>com.apple.kpi.mach</key>
+		<string>20.0.0</string>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,33 @@
+name: AirportSequoia
+options:
+  bundleIdPrefix: com.openintelwireless
+targets:
+  AirportSequoia:
+    type: bundle
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: AirportSequoia
+      - path: include
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.openintelwireless.AirportSequoia
+      WRAPPER_EXTENSION: kext
+      GENERATE_INFOPLIST_FILE: NO
+      INFOPLIST_FILE: AirportSequoia/Info.plist
+      CODE_SIGNING_ALLOWED: NO
+      MODULE_NAME: com.openintelwireless.AirportSequoia
+      HEADER_SEARCH_PATHS:
+        - "$(SRCROOT)/include"
+        - "$(SRCROOT)/MacKernelSDK/Include"
+      LIBRARY_SEARCH_PATHS:
+        - "$(SRCROOT)/MacKernelSDK/Library/x86_64"
+      OTHER_LDFLAGS:
+        - "-Xlinker"
+        - "-kext"
+        - "-lkmodc++"
+        - "-lkmod"
+      GCC_ENABLE_CPP_EXCEPTIONS: NO
+      GCC_ENABLE_CPP_RTTI: NO
+      CLANG_CXX_LANGUAGE_STANDARD: c++17
+      MACH_O_TYPE: mh_object
+      KERNEL_EXTENSION: YES

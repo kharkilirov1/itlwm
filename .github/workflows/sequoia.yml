@@ -1,0 +1,30 @@
+name: Build AirportSequoia
+
+on:
+  push:
+    branches: [sequoia-port]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Fetch MacKernelSDK
+        run: git clone --depth=1 https://github.com/acidanthera/MacKernelSDK.git
+
+      - name: Generate Xcode project
+        run: xcodegen -s project_sequoia.yml
+
+      - name: Build kext
+        run: xcodebuild -project AirportSequoia.xcodeproj -scheme AirportSequoia -configuration Debug -derivedDataPath build
+
+      - name: Upload kext
+        uses: actions/upload-artifact@v4
+        with:
+          name: AirportSequoia.kext
+          path: build/Build/Products/Debug/AirportSequoia.kext
