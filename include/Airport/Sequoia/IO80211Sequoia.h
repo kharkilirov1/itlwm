@@ -34,7 +34,7 @@ class IO80211NetworkPacket;
 class IO80211Peer;
 class IO80211PeerManager;
 class IO80211TimerSource;
-class IOMediumType;
+class IO80211VirtualInterface;
 class IOReporter;
 class IOSkywalkPacketBufferPool;
 class IOSkywalkPacketQueue;
@@ -71,6 +71,17 @@ struct apple80211_platform_config;
 struct apple80211_protocol_offload_data;
 struct apple80211_system_state;
 struct apple80211_tcp_udp_keepalive_data;
+struct apple80211_wme_ac;
+struct apple80211_stat_report;
+struct apple80211_set_mac_address;
+struct apple80211_cca_report;
+struct apple80211_frame_counters;
+struct apple80211_chip_counters_tx;
+struct apple80211_chip_counters_rx;
+struct apple80211_chip_error_counters_tx;
+struct apple80211_interface_availability;
+struct apple80211_infra_specific_stats;
+struct apple80211_ManagementInformationBasedot11_counters;
 
 class IO80211SkywalkInterface : public IOSkywalkEthernetInterface {
 public:
