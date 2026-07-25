@@ -82,7 +82,14 @@ struct apple80211_chip_counters_rx;
 struct apple80211_chip_error_counters_tx;
 struct apple80211_interface_availability;
 struct apple80211_infra_specific_stats;
+struct apple80211_ManagementInformationBasedot11_counters;
 struct apple80211_ampdu_stat_report;
+struct peerSlotDataStats;
+struct packetCounters_t;
+struct ieee80211_ht_capability_ie;
+typedef int scanSource;
+typedef int joinStatus;
+typedef int kIO80211InterfaceType;
 struct apple80211_awdl_statistics;
 struct apple80211_beacon_period_data;
 struct apple80211_btCoex_report;
@@ -106,8 +113,9 @@ struct joinStatus;
 struct ifmediareq;
 
 class IO80211SkywalkInterface : public IOSkywalkEthernetInterface {
+    OSDeclareAbstractStructors(IO80211SkywalkInterface)
+
 public:
-    virtual IOReturn getMetaClass(void); // RT?
     virtual IOReturn initIvars(void); // RT?
     virtual IOReturn postCAEventForIOCTLLegacyUsage(int,unsigned long long); // RT?
     virtual bool init(void);
@@ -298,8 +306,9 @@ public:
 };
 
 class IO80211InfraInterface : public IO80211SkywalkInterface {
+    OSDeclareAbstractStructors(IO80211InfraInterface)
+
 public:
-    virtual IOReturn getMetaClass(void); // RT?
     virtual bool start(IOService *);
     virtual IOReturn triggerLinkStatusUpdate(IO80211TimerSource *); // RT?
     virtual IOReturn reportDataTransferRatesTimer(IO80211TimerSource *); // RT?
@@ -446,8 +455,9 @@ public:
 };
 
 class IO80211VirtualInterface : public IO80211SkywalkInterface {
+    OSDeclareAbstractStructors(IO80211VirtualInterface)
+
 public:
-    virtual IOReturn getMetaClass(void); // RT?
     virtual IOReturn _RESERVEDIO80211VirtualInterface0(void); // RT?
     virtual IOReturn _RESERVEDIO80211VirtualInterface1(void); // RT?
     virtual IOReturn _RESERVEDIO80211VirtualInterface2(void); // RT?
@@ -609,8 +619,9 @@ public:
 };
 
 class IO80211Controller : public IOEthernetController {
+    OSDeclareAbstractStructors(IO80211Controller)
+
 public:
-    virtual IOReturn getMetaClass(void); // RT?
     virtual IOReturn _RESERVEDIO80211Controller0(void); // RT?
     virtual IOReturn _RESERVEDIO80211Controller1(void); // RT?
     virtual IOReturn _RESERVEDIO80211Controller2(void); // RT?
@@ -717,7 +728,7 @@ public:
     virtual IOReturn getWorkQueue(void); // RT?
     virtual IOReturn getIO80211CommandGate(void); // RT?
     virtual IO80211SkywalkInterface getPrimarySkywalkInterface(void);
-    virtual void getHardwareAddress(IOEthernetAddress *);
+    virtual IOReturn getHardwareAddress(IOEthernetAddress *);
     virtual IOReturn acquireMaxBuffer(void); // RT?
     virtual IOReturn releaseMaxBuffer(IO80211CagedBuffer *); // RT?
     virtual IOReturn getMaxBufferLock(void); // RT?

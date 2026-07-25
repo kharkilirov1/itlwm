@@ -18,14 +18,6 @@ OSDefineMetaClassAndStructors(AirportSequoiaInfra, IO80211InfraInterface)
 // AirportSequoiaInfra
 // ---------------------------------------------------------------------------
 
-bool AirportSequoiaInfra::init(IOService *provider) {
-    if (!super::init(provider)) {
-        return false;
-    }
-    DRVLOG("infra interface init");
-    return true;
-}
-
 void AirportSequoiaInfra::free() {
     DRVLOG("infra interface free");
     super::free();

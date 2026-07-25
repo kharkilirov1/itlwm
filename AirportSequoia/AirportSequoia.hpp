@@ -21,7 +21,6 @@ class AirportSequoiaInfra : public IO80211InfraInterface {
     OSDeclareDefaultStructors(AirportSequoiaInfra)
 
 public:
-    bool init(IOService *provider) override;
     void free() override;
 };
 
