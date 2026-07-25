@@ -9,6 +9,7 @@
 #include <net/ethernet.h>
 #include <sys/mbuf.h>
 #include <Airport/apple80211_var.h>
+#include <Airport/apple80211_ioctl.h>
 #include <Airport/apple_private_spi.h>
 #include <Airport/IOSkywalkEthernetInterface.h>
 
@@ -29,7 +30,6 @@ class IO80211FlowQueueHash;
 class IO80211FlowQueueLegacy;
 class IO80211InterfaceAVCAdvisory;
 class IO80211InterfacePostMessage;
-class IO80211LinkState;
 class IO80211NetworkPacket;
 class IO80211Peer;
 class IO80211PeerManager;
@@ -45,6 +45,32 @@ class TxCompletionEnqueueStats;
 class TxPacketRequest;
 class TxSubmissionDequeueStats;
 class UpdateULLADuration;
+
+// Типы из закрытых SDK-хедеров Sequoia (нет в открытых дампах) — только fwd decl
+typedef int SkywalkInterfaceRole;
+struct userPrintCtx;
+struct apple80211_arp_keepalive_data;
+struct apple80211_awdl_low_latency_statistics_reduced;
+struct apple80211_channel_band;
+struct apple80211_channel_width;
+struct apple80211_data_path_interface_stats;
+struct apple80211_data_path_peer_stats;
+struct apple80211_infra_peer_address_data;
+struct apple80211_infra_scan_start_event_data;
+struct apple80211_ior_legend_query;
+struct apple80211_ipv4_params;
+struct apple80211_ipv6_params;
+struct apple80211_latency;
+struct apple80211_latency_all_ac;
+struct apple80211_le_scan_params;
+struct apple80211_magic_pattern_data;
+struct apple80211_nan_low_latency_peer_statistics;
+struct apple80211_p2p_thread_coex_event;
+struct apple80211_packet_filter_data;
+struct apple80211_platform_config;
+struct apple80211_protocol_offload_data;
+struct apple80211_system_state;
+struct apple80211_tcp_udp_keepalive_data;
 
 class IO80211SkywalkInterface : public IOSkywalkEthernetInterface {
 public:

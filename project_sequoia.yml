@@ -32,6 +32,9 @@ targets:
         - "-lkmod"
       GCC_ENABLE_CPP_EXCEPTIONS: NO
       GCC_ENABLE_CPP_RTTI: NO
+      GCC_PREPROCESSOR_DEFINITIONS: "KERNEL=1 __IO80211_TARGET=__MAC_13_0 $(inherited)"
+      OTHER_CFLAGS: "-mkernel"
+      OTHER_CPLUSPLUSFLAGS: "-mkernel"
       CLANG_CXX_LANGUAGE_STANDARD: c++17
       MACH_O_TYPE: mh_object
       KERNEL_EXTENSION: YES
