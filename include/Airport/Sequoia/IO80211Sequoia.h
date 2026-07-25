@@ -35,6 +35,7 @@ class IO80211Peer;
 class IO80211PeerManager;
 class IO80211TimerSource;
 class IO80211VirtualInterface;
+class IO80211Controller;
 class IOReporter;
 class IOSkywalkPacketBufferPool;
 class IOSkywalkPacketQueue;
@@ -81,7 +82,28 @@ struct apple80211_chip_counters_rx;
 struct apple80211_chip_error_counters_tx;
 struct apple80211_interface_availability;
 struct apple80211_infra_specific_stats;
-struct apple80211_ManagementInformationBasedot11_counters;
+struct apple80211_ampdu_stat_report;
+struct apple80211_awdl_statistics;
+struct apple80211_beacon_period_data;
+struct apple80211_btCoex_report;
+struct apple80211_channel_switch_announcement;
+struct apple80211_chip_stats;
+struct apple80211_feature_flags;
+struct apple80211_hostap_state;
+struct apple80211_ioctl;
+struct apple80211_leaky_ap_event;
+struct apple80211_leaky_ap_ssid_metrics;
+struct apple80211_leaky_ap_stats;
+struct apple80211_lqm_config_t;
+struct apple80211_lqm_summary;
+struct apple80211_lteCoex_report;
+struct apple80211_p2p_airplay_statistics;
+struct apple80211_power_debug_sub_info;
+struct apple80211_ssid_transition_feature_enabled;
+struct apple80211_wcl_advisory_info;
+struct apple80211_wcl_tx_rx_latency;
+struct joinStatus;
+struct ifmediareq;
 
 class IO80211SkywalkInterface : public IOSkywalkEthernetInterface {
 public:
@@ -251,7 +273,7 @@ public:
     virtual int getNumTxQueues(void);
     virtual IOReturn enable(unsigned int);
     virtual IOReturn disable(unsigned int);
-    virtual IOReturn classNameOverride(void); // RT?
+    virtual const char * classNameOverride(void); // RT?
     virtual int errnoFromReturn(int);
     virtual SInt32 setInterfaceEnable(bool);
     virtual UInt32 getFeatureFlags(void);
