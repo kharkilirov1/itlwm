@@ -27,6 +27,12 @@ class IOSkywalkPacketBufferPool;
 class IOSkywalkPacketQueue;
 class IOSkywalkTSOOptions;
 class PacketSkywalkScratch;
+class IO80211FlowQueueHash;
+class TxCompletionEnqueueStats;
+class TxSubmissionDequeueStats;
+typedef int apple80211_wme_ac;
+struct nicproxy_info_s;
+struct nicproxy_limits_info_s;
 typedef int SkywalkInterfaceRole;
 struct userPrintCtx;
 struct apple80211_stat_report;
@@ -65,6 +71,17 @@ public:
 
 class IOSkywalkNetworkInterface : public IOSkywalkInterface {
     OSDeclareAbstractStructors(IOSkywalkNetworkInterface)
+
+public:
+    struct RegistrationInfo {
+        uint8_t pad[304];
+    } __attribute__((packed));
+    struct ExpansionData
+    {
+        RegistrationInfo *fRegistrationInfo;
+        ifnet_t fBSDInterface;
+    };
+    ExpansionData *mExpansionData;
 
 public:
     virtual IOReturn registerNetworkInterfaceWithLogicalLink(IOSkywalkNetworkInterface::RegistrationInfo const*,IOSkywalkLogicalLink *,IOSkywalkPacketBufferPool *,IOSkywalkPacketBufferPool *,UInt);
@@ -106,7 +123,7 @@ public:
     virtual const char * classNameOverride(void);
     virtual void deferBSDAttach(bool);
     virtual void reportDetailedLinkStatus(if_link_status const*);
-    virtual UInt getTSOOptions(IOSkywalkNetworkInterface::IOSkywalkTSOOptions *);
+    virtual UInt getTSOOptions(IOSkywalkTSOOptions *);
     OSMetaClassDeclareReservedUnused(IOSkywalkNetworkInterface,  0);
     OSMetaClassDeclareReservedUnused(IOSkywalkNetworkInterface,  1);
     OSMetaClassDeclareReservedUnused(IOSkywalkNetworkInterface,  2);
@@ -121,22 +138,22 @@ public:
     // non-virtual helpers (из бинарника)
     bool initRegistrationInfo(IOSkywalkNetworkInterface::RegistrationInfo*, unsigned int, unsigned long);
     void reportLinkStatus(unsigned int, unsigned int);
-
-public:
-    struct RegistrationInfo {
-        uint8_t pad[304];
-    } __attribute__((packed));
-    struct ExpansionData
-    {
-        RegistrationInfo *fRegistrationInfo;
-        ifnet_t fBSDInterface;
-    };
-    ExpansionData *mExpansionData;
 };
 
 
 class IOSkywalkEthernetInterface : public IOSkywalkNetworkInterface {
     OSDeclareAbstractStructors(IOSkywalkEthernetInterface)
+
+public:
+    struct RegistrationInfo {
+        uint8_t pad[304];
+    } __attribute__((packed));
+    struct ExpansionData2
+    {
+        RegistrationInfo *fRegistrationInfo;
+        ifnet_t fBSDInterface;
+    };
+    ExpansionData2 *mExpansionData2;
 
 public:
     virtual void getHardwareAddress(ether_addr *);
@@ -161,17 +178,6 @@ public:
     OSMetaClassDeclareReservedUnused(IOSkywalkEthernetInterface, 10);
 public:
     bool initRegistrationInfo(IOSkywalkEthernetInterface::RegistrationInfo*, unsigned int, unsigned long);
-
-public:
-    struct RegistrationInfo {
-        uint8_t pad[304];
-    } __attribute__((packed));
-    struct ExpansionData2
-    {
-        RegistrationInfo *fRegistrationInfo;
-        ifnet_t fBSDInterface;
-    };
-    ExpansionData2 *mExpansionData2;
 };
 
 
