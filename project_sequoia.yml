@@ -9,16 +9,18 @@ targets:
     sources:
       - path: AirportSequoia
     settings:
-      SDKROOT: "$(SRCROOT)/MacKernelSDK"
+      SDKROOT: macosx
       PRODUCT_BUNDLE_IDENTIFIER: com.openintelwireless.AirportSequoia
       WRAPPER_EXTENSION: kext
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: AirportSequoia/Info.plist
       CODE_SIGNING_ALLOWED: NO
       MODULE_NAME: com.openintelwireless.AirportSequoia
+      KERNEL_EXTENSION_HEADER_SEARCH_PATHS: "$(SRCROOT)/MacKernelSDK/Headers"
+      KERNEL_FRAMEWORK_HEADERS: "$(SRCROOT)/MacKernelSDK/Headers"
       HEADER_SEARCH_PATHS:
         - "$(SRCROOT)/include"
-        - "$(SRCROOT)/MacKernelSDK/Include"
+        - "$(SRCROOT)/MacKernelSDK/Headers"
       LIBRARY_SEARCH_PATHS:
         - "$(SRCROOT)/MacKernelSDK/Library/x86_64"
       OTHER_LDFLAGS:
