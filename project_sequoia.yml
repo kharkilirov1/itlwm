@@ -50,5 +50,6 @@ targets:
       OTHER_CPLUSPLUSFLAGS: "-mkernel -Wno-deprecated-register"
       CLANG_CXX_LANGUAGE_STANDARD: gnu++17
       GCC_C_LANGUAGE_STANDARD: gnu11
+      GCC_INPUT_FILETYPE: sourcecode.cpp.cpp
       MACH_O_TYPE: mh_object
       KERNEL_EXTENSION: YES
