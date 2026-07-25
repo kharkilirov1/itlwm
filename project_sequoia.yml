@@ -48,7 +48,7 @@ targets:
       GCC_PREPROCESSOR_DEFINITIONS: "KERNEL=1 AIRPORT __PRIVATE_SPI__ IO80211FAMILY_V2 __IO80211_TARGET=__MAC_13_0 $(inherited)"
       OTHER_CFLAGS: "-mkernel"
       OTHER_CPLUSPLUSFLAGS: "-mkernel -Wno-deprecated-register"
-      CLANG_CXX_LANGUAGE_STANDARD: gnu++17
+      CLANG_CXX_LANGUAGE_STANDARD: gnu++14
       GCC_C_LANGUAGE_STANDARD: gnu11
       GCC_INPUT_FILETYPE: sourcecode.cpp.cpp
       MACH_O_TYPE: mh_object
