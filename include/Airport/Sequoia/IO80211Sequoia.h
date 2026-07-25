@@ -1,98 +1,134 @@
 // IO80211Sequoia.h — иерархия классов IO80211Family 15.7.4 (24G517)
-// Восстановлено из KDK-символов: методы (mangled->demangled) + наследование (OSMetaClass).
-// IO80211InfraInterface, IO80211VirtualInterface : IO80211SkywalkInterface : IOSkywalkEthernetInterface
-// IO80211Controller : IOEthernetController
+// Восстановлено из KDK-символов. Методы + наследование + return types (где известны).
 #ifndef IO80211_SEQUOIA_H
 #define IO80211_SEQUOIA_H
 
 #include <IOKit/network/IOEthernetController.h>
+#include <net/if.h>
+#include <net/if_var.h>
+#include <net/ethernet.h>
 #include <Airport/IOSkywalkEthernetInterface.h>
+
+typedef int SkywalkInterfaceRole; // TODO: точный enum из IOSkywalkFamily
+class CCLogStream;
+class CCPipe;
+class CreatePostOffice;
+class FamilyLqmLogId;
+class FlowIdMetadata;
+class GetProvider;
+class IO80211APIUserClient;
+class IO80211AssociationJoinSnapshot;
+class IO80211Buffer;
+class IO80211CagedBuffer;
+class IO80211CountryCodeOp;
+class IO80211FeatureCode;
+class IO80211FlowQueue;
+class IO80211FlowQueueHash;
+class IO80211FlowQueueLegacy;
+class IO80211InterfaceAVCAdvisory;
+class IO80211InterfacePostMessage;
+class IO80211LinkState;
+class IO80211NetworkPacket;
+class IO80211Peer;
+class IO80211PeerManager;
+class IO80211TimerSource;
+class IOMediumType;
+class IOReportChannelList;
+class IOReporter;
+class IOSkywalkPacketBufferPool;
+class IOSkywalkPacketQueue;
+class OSSymbol;
+class PacketSkywalkScratch;
+class RegistrationInfo;
+class SInt64;
+class SkywalkInterfaceRole;
+class TxCompletionEnqueueStats;
+class TxPacketRequest;
+class TxSubmissionDequeueStats;
+class UpdateULLADuration;
 
 class IO80211SkywalkInterface : public IOSkywalkEthernetInterface {
 public:
-    virtual IOReturn /*RT?*/ IO80211SkywalkInterface(OSMetaClass const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMetaClass(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ initIvars(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ postCAEventForIOCTLLegacyUsage(int,unsigned long long);  // TODO: return type
+    virtual IOReturn getMetaClass(void); // RT?
+    virtual IOReturn initIvars(void); // RT?
+    virtual IOReturn postCAEventForIOCTLLegacyUsage(int,unsigned long long); // RT?
     virtual bool init(void);
     virtual bool init(IOService *,ether_addr *);
     virtual bool start(IOService *);
-    virtual IOReturn /*RT?*/ getInterfaceRoleCounter(SkywalkInterfaceRole);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceRole(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceRoleStr(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logDebug(unsigned long long,char const *,...);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPeerManager(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceId(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getBSDName(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logDebug(char const *,...);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInterfaceRole(unsigned int);  // TODO: return type
+    virtual IOReturn getInterfaceRoleCounter(SkywalkInterfaceRole); // RT?
+    virtual IOReturn getInterfaceRole(void); // RT?
+    virtual IOReturn getInterfaceRoleStr(void); // RT?
+    virtual IOReturn logDebug(unsigned long long,char const *,...); // RT?
+    virtual IOReturn getPeerManager(void); // RT?
+    virtual IOReturn getInterfaceId(void); // RT?
+    virtual const char * getBSDName(void);
+    virtual IOReturn logDebug(char const *,...); // RT?
+    virtual IOReturn setInterfaceRole(unsigned int); // RT?
     virtual void free(void);
     virtual SInt32 initBSDInterfaceParameters(ifnet_init_eparams *,sockaddr_dl * *);
     virtual bool prepareBSDInterface(__ifnet *,unsigned int);
-    virtual IOReturn /*RT?*/ createIOReporters(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ validateDispatchQueue(void);  // TODO: return type
+    virtual IOReturn createIOReporters(void); // RT?
+    virtual IOReturn validateDispatchQueue(void); // RT?
     virtual ifnet_t getIfnet(void);
-    virtual IOReturn /*RT?*/ getRingMD(IO80211APIUserClient *,unsigned long long);  // TODO: return type
+    virtual IOReturn getRingMD(IO80211APIUserClient *,unsigned long long); // RT?
     virtual bool isIOUCPipeOpened(void);
     virtual void postMessageIOUC(char const *,unsigned int,void *,unsigned long);
     virtual IOReturn newUserClient(task *,void *,unsigned int,OSDictionary *,IOUserClient * *);
     virtual int getEventPipeSize(void);
     virtual UInt64 createEventPipe(IO80211APIUserClient *);
     virtual void destroyEventPipe(IO80211APIUserClient *);
-    virtual IOReturn /*RT?*/ setUserBufferInfo(IOMemoryDescriptor *,unsigned long long);  // TODO: return type
-    virtual IOReturn /*RT?*/ processBSDCommandGated(unsigned int,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ performGatedCommandIOUC(unsigned int,void *);  // TODO: return type
+    virtual IOReturn setUserBufferInfo(IOMemoryDescriptor *,unsigned long long); // RT?
+    virtual IOReturn processBSDCommandGated(unsigned int,void *); // RT?
+    virtual IOReturn performGatedCommandIOUC(unsigned int,void *); // RT?
     virtual IOReturn processBSDCommand(__ifnet *,unsigned int,void *);
-    virtual IOReturn /*RT?*/ performGatedCommandIOCTL(unsigned int,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ storeProcessNameAndIoctlInformation(unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ isCommandAllowed(void);  // TODO: return type
+    virtual IOReturn performGatedCommandIOCTL(unsigned int,void *); // RT?
+    virtual IOReturn storeProcessNameAndIoctlInformation(unsigned long); // RT?
+    virtual IOReturn isCommandAllowed(void); // RT?
     virtual bool createPeerManager(void);
-    virtual IOReturn /*RT?*/ createPeer(unsigned char const *,IO80211PeerManager *);  // TODO: return type
-    virtual IOReturn /*RT?*/ storeIoctlInArray(OSArray *,OSNumber *);  // TODO: return type
-    virtual IOReturn /*RT?*/ dumpUnentitledProcesses(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logDebugHex(void const *,unsigned long,char const *,...);  // TODO: return type
-    virtual void vlogDebug(unsigned long long,char const *,__va_list_tag *);
-    virtual void vlogDebugBPF(unsigned long long,char const *,__va_list_tag *);
+    virtual IOReturn createPeer(unsigned char const *,IO80211PeerManager *); // RT?
+    virtual IOReturn storeIoctlInArray(OSArray *,OSNumber *); // RT?
+    virtual IOReturn dumpUnentitledProcesses(void); // RT?
+    virtual IOReturn logDebugHex(void const *,unsigned long,char const *,...); // RT?
     virtual bool shouldLog(unsigned long long);
     virtual void handleDebugCmd(apple80211_debug_command *);
     virtual void printDataPath(userPrintCtx *);
     virtual UInt32 getDataQueueDepth(void);
-    virtual const char* stringFromReturn(int);
-    virtual IOReturn /*RT?*/ getControllerWorkQueue(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getWorkQueue(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPeerMonitor(IO80211Peer *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLinkQualityMonitor(IO80211Peer *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLinkRecovery(IO80211Peer *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLqmCrashTracer(IO80211Peer *);  // TODO: return type
+    virtual const char stringFromReturn(int);
+    virtual IOReturn getControllerWorkQueue(void); // RT?
+    virtual IOReturn getWorkQueue(void); // RT?
+    virtual IOReturn getPeerMonitor(IO80211Peer *); // RT?
+    virtual IOReturn getLinkQualityMonitor(IO80211Peer *); // RT?
+    virtual IOReturn getLinkRecovery(IO80211Peer *); // RT?
+    virtual IOReturn getLqmCrashTracer(IO80211Peer *); // RT?
     virtual IOReturn getHardwareAddress(ether_addr *);
-    virtual IOReturn /*RT?*/ getSelfMacAddr(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInitMacAddress(ether_addr &);  // TODO: return type
+    virtual IOReturn getSelfMacAddr(void); // RT?
+    virtual IOReturn setInitMacAddress(ether_addr &); // RT?
     virtual IOReturn setHardwareAddress(ether_addr *);
     virtual IOReturn setSET_MAC_ADDRESS(apple80211_set_mac_address *);
-    virtual IOReturn /*RT?*/ updateTimeSyncMacAddress(ether_addr &);  // TODO: return type
+    virtual IOReturn updateTimeSyncMacAddress(ether_addr &); // RT?
     virtual IOMediumType getMediumType(void);
     virtual IOReturn handleSIOCSIFADDR(void);
     virtual bool isDebounceOnGoing(void);
     virtual bool setLinkState(IO80211LinkState,unsigned int,bool,unsigned int);
     virtual SInt32 setRunningState(bool);
     virtual void postMessage(unsigned int,void *,unsigned long,bool);
-    virtual IOReturn /*RT?*/ postMessageInternal(unsigned int,void *,unsigned long,bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ setPidLock(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ pidLocked(void);  // TODO: return type
+    virtual IOReturn postMessageInternal(unsigned int,void *,unsigned long,bool); // RT?
+    virtual IOReturn setPidLock(bool); // RT?
+    virtual IOReturn pidLocked(void); // RT?
     virtual IOReturn setPowerState(unsigned long,IOService *);
-    virtual IOReturn /*RT?*/ getPowerState(void);  // TODO: return type
+    virtual IOReturn getPowerState(void); // RT?
     virtual void stop(IOService *);
     virtual unsigned long initialPowerStateForDomainState(unsigned long);
     virtual unsigned long maxCapabilityForDomainState(unsigned long);
-    virtual IOReturn /*RT?*/ getP2PSkywalkPeerMgr(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ postMessageSync(unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ reportDataPathEventsGated(void *,void *,void *,void *,void *);  // TODO: return type
+    virtual IOReturn getP2PSkywalkPeerMgr(void); // RT?
+    virtual IOReturn postMessageSync(unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn reportDataPathEventsGated(void *,void *,void *,void *,void *); // RT?
     virtual IOReturn reportDataPathEvents(unsigned int,void *,unsigned long,bool);
-    virtual IOReturn /*RT?*/ getSupportedMediaArray(unsigned int *,unsigned int *);  // TODO: return type
+    virtual IOReturn getSupportedMediaArray(unsigned int *,unsigned int *); // RT?
     virtual IOReturn handleChosenMedia(unsigned int);
     virtual IOReturn setPromiscuousModeEnable(bool,unsigned int);
-    virtual IOReturn /*RT?*/ recordInputPacket(int,int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceMonitor(void);  // TODO: return type
+    virtual IOReturn recordInputPacket(int,int); // RT?
+    virtual IOReturn getInterfaceMonitor(void); // RT?
     virtual IOReturn recordOutputPacket(apple80211_wme_ac,int,int);
     virtual IOReturn recordOutputPackets(TxSubmissionDequeueStats *,TxSubmissionDequeueStats *);
     virtual mbuf_flags_t inputPacket(IO80211NetworkPacket *,packet_info_tag *,ether_header *,bool *,bool);
@@ -109,15 +145,15 @@ public:
     virtual void removePacketQueue(IO80211FlowQueueHash const *);
     virtual SInt64 pendingPackets(unsigned char);
     virtual SInt64 packetSpace(unsigned char);
-    virtual IOReturn /*RT?*/ setInterfaceId(unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCompanionInterfaceId(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setCompanionInterfaceId(unsigned int);  // TODO: return type
+    virtual IOReturn setInterfaceId(unsigned int); // RT?
+    virtual IOReturn getCompanionInterfaceId(void); // RT?
+    virtual IOReturn setCompanionInterfaceId(unsigned int); // RT?
     virtual bool isChipInterfaceReady(void);
     virtual void setScanningState(unsigned int,bool,apple80211_scan_data *,int);
     virtual IOReturn configureReport(IOReportChannelList *,unsigned int,void *,void *);
     virtual IOReturn updateReport(IOReportChannelList *,unsigned int,void *,void *);
     virtual void setDataPathState(bool);
-    virtual IOReturn /*RT?*/ getController(void);  // TODO: return type
+    virtual IOReturn getController(void); // RT?
     virtual void updateLinkParameters(apple80211_interface_availability *);
     virtual void updateInterfaceCoexRiskPct(unsigned long long);
     virtual void setLQM(unsigned long long);
@@ -138,158 +174,157 @@ public:
     virtual bool wowEnabled(void);
     virtual UInt64 createLinkQualityMonitor(IO80211Peer *,IOService *);
     virtual void releaseLinkQualityMonitor(IO80211Peer *);
-    virtual IOReturn /*RT?*/ getPropertyTable(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getWorkerMatchingDict(OSString *);  // TODO: return type
+    virtual IOReturn getPropertyTable(void); // RT?
+    virtual IOReturn getWorkerMatchingDict(OSString *); // RT?
     virtual bool isInterfaceEnabled(void);
-    virtual IOReturn /*RT?*/ getPacketPool(OSString *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLogger(void);  // TODO: return type
+    virtual IOReturn getPacketPool(OSString *); // RT?
+    virtual IOReturn getLogger(void); // RT?
     virtual IOReturn debugHandler(apple80211_debug_command *);
-    virtual IOReturn /*RT?*/ getDeviceType(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setDeviceType(unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ setParentInterface(IO80211VirtualInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getParentInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLowLatencyEnabled(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ isLowLatencyEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ pidLockPid(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceSnapshots(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInterfaceSnapshots(IO80211AssociationJoinSnapshot *);  // TODO: return type
+    virtual IOReturn getDeviceType(void); // RT?
+    virtual IOReturn setDeviceType(unsigned int); // RT?
+    virtual IOReturn setParentInterface(IO80211VirtualInterface *); // RT?
+    virtual IOReturn getParentInterface(void); // RT?
+    virtual IOReturn setLowLatencyEnabled(bool); // RT?
+    virtual IOReturn isLowLatencyEnabled(void); // RT?
+    virtual IOReturn pidLockPid(void); // RT?
+    virtual IOReturn getInterfaceSnapshots(void); // RT?
+    virtual IOReturn setInterfaceSnapshots(IO80211AssociationJoinSnapshot *); // RT?
     virtual IO80211LinkState linkState(void);
     virtual void setInterfaceNF(apple80211_channel,long long);
     virtual void setInterfaceOFDMDesense(apple80211_channel,long long);
     virtual void setNotificationProperty(OSSymbol const *,OSObject const *);
-    virtual IOReturn /*RT?*/ getLQMSummary(apple80211_lqm_summary *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getScanManager(void);  // TODO: return type
+    virtual IOReturn getLQMSummary(apple80211_lqm_summary *); // RT?
+    virtual IOReturn getScanManager(void); // RT?
     virtual void statsDump(void);
     virtual void powerOnNotification(void);
     virtual void powerOffNotification(void);
     virtual UInt64 getTxQueueDepth(void);
     virtual UInt64 getRxQueueCapacity(void);
     virtual void updateRxCounter(unsigned long long);
-    virtual IOReturn /*RT?*/ getMultiCastQueue(void);  // TODO: return type
+    virtual IOReturn getMultiCastQueue(void); // RT?
     virtual int getAssocState(void);
     virtual void notifyQueueState(apple80211_wme_ac,unsigned short);
     virtual int getTxHeadroom(void);
-    virtual IOReturn /*RT?*/ getRxCompQueue(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTxCompQueue(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTxSubQueue(apple80211_wme_ac);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTxPacketPool(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getRxPacketPool(void);  // TODO: return type
+    virtual IOReturn getRxCompQueue(void); // RT?
+    virtual IOReturn getTxCompQueue(void); // RT?
+    virtual IOReturn getTxSubQueue(apple80211_wme_ac); // RT?
+    virtual IOReturn getTxPacketPool(void); // RT?
+    virtual IOReturn getRxPacketPool(void); // RT?
     virtual void enableDatapath(void);
     virtual void disableDatapath(void);
     virtual int getNumTxQueues(void);
     virtual IOReturn enable(unsigned int);
     virtual IOReturn disable(unsigned int);
-    virtual IOReturn /*RT?*/ classNameOverride(void);  // TODO: return type
+    virtual IOReturn classNameOverride(void); // RT?
     virtual int errnoFromReturn(int);
     virtual SInt32 setInterfaceEnable(bool);
     virtual UInt32 getFeatureFlags(void);
     virtual bool isCommandProhibited(int);
-    virtual IOReturn /*RT?*/ routeIoctlToWcl(unsigned int,unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ attachPeer(ether_addr *);  // TODO: return type
-    virtual IOReturn /*RT?*/ detachPeer(ether_addr *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setDebugTrafficReport(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMacAddressAgent(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getDataPathInterfaceStats(apple80211_data_path_interface_stats *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getDataPathPeerStats(apple80211_data_path_peer_stats *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLastQueuePacketTime(ether_addr *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLastRxUnicastLinkActivityTime(ether_addr *);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateInterfaceDataStats(apple80211_data_path_interface_stats *);  // TODO: return type
-    virtual IOReturn /*RT?*/ updatePeerDataStats(apple80211_data_path_peer_stats *);  // TODO: return type
-    virtual IOReturn /*RT?*/ logTxLatency(unsigned char *,unsigned int,unsigned long long);  // TODO: return type
-    virtual IOReturn /*RT?*/ findPeer(ether_addr &);  // TODO: return type
-    virtual IOReturn /*RT?*/ logRxLatency(unsigned int,unsigned long long);  // TODO: return type
-    virtual IOReturn /*RT?*/ getNClearTxRxLatency(apple80211_latency_all_ac *,apple80211_latency_all_ac *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLastTxTimeStamp(unsigned long long &);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLastRxTimeStamp(unsigned long long &);  // TODO: return type
+    virtual IOReturn routeIoctlToWcl(unsigned int,unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn attachPeer(ether_addr *); // RT?
+    virtual IOReturn detachPeer(ether_addr *); // RT?
+    virtual IOReturn setDebugTrafficReport(bool); // RT?
+    virtual IOReturn getMacAddressAgent(void); // RT?
+    virtual IOReturn getDataPathInterfaceStats(apple80211_data_path_interface_stats *); // RT?
+    virtual IOReturn getDataPathPeerStats(apple80211_data_path_peer_stats *); // RT?
+    virtual IOReturn getLastQueuePacketTime(ether_addr *); // RT?
+    virtual IOReturn getLastRxUnicastLinkActivityTime(ether_addr *); // RT?
+    virtual IOReturn updateInterfaceDataStats(apple80211_data_path_interface_stats *); // RT?
+    virtual IOReturn updatePeerDataStats(apple80211_data_path_peer_stats *); // RT?
+    virtual IOReturn logTxLatency(unsigned char *,unsigned int,unsigned long long); // RT?
+    virtual IOReturn findPeer(ether_addr &); // RT?
+    virtual IOReturn logRxLatency(unsigned int,unsigned long long); // RT?
+    virtual IOReturn getNClearTxRxLatency(apple80211_latency_all_ac *,apple80211_latency_all_ac *); // RT?
+    virtual IOReturn getLastTxTimeStamp(unsigned long long &); // RT?
+    virtual IOReturn getLastRxTimeStamp(unsigned long long &); // RT?
 };
 
 class IO80211InfraInterface : public IO80211SkywalkInterface {
 public:
-    virtual IOReturn /*RT?*/ IO80211InfraInterface(OSMetaClass const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMetaClass(void);  // TODO: return type
+    virtual IOReturn getMetaClass(void); // RT?
     virtual bool start(IOService *);
-    virtual IOReturn /*RT?*/ triggerLinkStatusUpdate(IO80211TimerSource *);  // TODO: return type
-    virtual IOReturn /*RT?*/ reportDataTransferRatesTimer(IO80211TimerSource *);  // TODO: return type
-    virtual IOReturn /*RT?*/ publishOffloadCapability(void);  // TODO: return type
+    virtual IOReturn triggerLinkStatusUpdate(IO80211TimerSource *); // RT?
+    virtual IOReturn reportDataTransferRatesTimer(IO80211TimerSource *); // RT?
+    virtual IOReturn publishOffloadCapability(void); // RT?
     virtual void stop(IOService *);
     virtual bool init(void);
     virtual void free(void);
-    virtual IOReturn /*RT?*/ createLQMData(void);  // TODO: return type
+    virtual IOReturn createLQMData(void); // RT?
     virtual SInt32 initBSDInterfaceParameters(ifnet_init_eparams *,sockaddr_dl * *);
     virtual bool prepareBSDInterface(__ifnet *,unsigned int);
-    virtual IOReturn /*RT?*/ updateStaticProperties(void);  // TODO: return type
+    virtual IOReturn updateStaticProperties(void); // RT?
     virtual IOReturn processBSDCommand(__ifnet *,unsigned int,void *);
-    virtual IOReturn /*RT?*/ updateMediumStatus(ifmediareq *);  // TODO: return type
+    virtual IOReturn updateMediumStatus(ifmediareq *); // RT?
     virtual bool isDebounceOnGoing(void);
     virtual bool setLinkState(IO80211LinkState,unsigned int,bool,unsigned int);
     virtual IOReturn setLinkStateInternal(IO80211LinkState,unsigned int,bool,unsigned int);
-    virtual IOReturn /*RT?*/ handleKeyDone(bool,bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateLinkSpeed(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ cancelDebounceTimer(void);  // TODO: return type
+    virtual IOReturn handleKeyDone(bool,bool); // RT?
+    virtual IOReturn updateLinkSpeed(void); // RT?
+    virtual IOReturn cancelDebounceTimer(void); // RT?
     virtual IO80211LinkState linkState(void);
     virtual void postMessage(unsigned int,void *,unsigned long,bool);
-    virtual IOReturn /*RT?*/ getInfraPeer(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ bssidChange(void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ UpdateULLADuration(unsigned long long *);  // TODO: return type
-    virtual IOReturn /*RT?*/ finishSIBCoexTimer(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getAVCAdvisory(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateChanOutageTime(apple80211_infra_scan_start_event_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ loadHwChannels(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ loadChannelInfo(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetInterface(void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateSSIDProperty(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateCountryCodeProperty(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ routeToP2PInterface(unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateBSSIDProperty(ether_addr &,apple80211_channel &,bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateChannelProperty(apple80211_channel &);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateLocaleProperty(void);  // TODO: return type
+    virtual IOReturn getInfraPeer(void); // RT?
+    virtual IOReturn bssidChange(void *,unsigned long); // RT?
+    virtual IOReturn UpdateULLADuration(unsigned long long *); // RT?
+    virtual IOReturn finishSIBCoexTimer(void); // RT?
+    virtual IOReturn getAVCAdvisory(void); // RT?
+    virtual IOReturn updateChanOutageTime(apple80211_infra_scan_start_event_data *); // RT?
+    virtual IOReturn loadHwChannels(void); // RT?
+    virtual IOReturn loadChannelInfo(void); // RT?
+    virtual IOReturn resetInterface(void *,unsigned long); // RT?
+    virtual IOReturn updateSSIDProperty(void); // RT?
+    virtual IOReturn updateCountryCodeProperty(bool); // RT?
+    virtual IOReturn routeToP2PInterface(unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn updateBSSIDProperty(ether_addr &,apple80211_channel &,bool); // RT?
+    virtual IOReturn updateChannelProperty(apple80211_channel &); // RT?
+    virtual IOReturn updateLocaleProperty(void); // RT?
     virtual void setWoWEnabled(bool);
     virtual void setScanningState(unsigned int,bool,apple80211_scan_data *,int);
     virtual IOReturn configureReport(IOReportChannelList *,unsigned int,void *,void *);
     virtual IOReturn updateReport(IOReportChannelList *,unsigned int,void *,void *);
-    virtual IOReturn /*RT?*/ handleLeakyApStatsResetTimer(IO80211TimerSource *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLeakyApStats(apple80211_leaky_ap_stats const * *);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetLeakyApStats(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLeakyApSsidMetrics(apple80211_leaky_ap_ssid_metrics *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLeakyAPStats(apple80211_leaky_ap_event *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLeakyAPStatsMode(unsigned int);  // TODO: return type
+    virtual IOReturn handleLeakyApStatsResetTimer(IO80211TimerSource *); // RT?
+    virtual IOReturn getLeakyApStats(apple80211_leaky_ap_stats const * *); // RT?
+    virtual IOReturn resetLeakyApStats(void); // RT?
+    virtual IOReturn setLeakyApSsidMetrics(apple80211_leaky_ap_ssid_metrics *); // RT?
+    virtual IOReturn setLeakyAPStats(apple80211_leaky_ap_event *); // RT?
+    virtual IOReturn setLeakyAPStatsMode(unsigned int); // RT?
     virtual IOReturn recordOutputPackets(TxSubmissionDequeueStats *,TxSubmissionDequeueStats *);
     virtual void logTxPacket(IO80211NetworkPacket *,PacketSkywalkScratch *,apple80211_wme_ac,bool);
-    virtual IOReturn /*RT?*/ getAwdlMaxBandWidth(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ get5GLowHighBandSwitchCounter(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ get5GLowHighBandSwitchSuccessPerc(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getULLAClassicDuration(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCoPTxRTSFailCount(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getULLALiteDuration(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetCoPTxRTSFailCount(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetSIBTurnOnMetrics(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCoPSIBCoexTurnOnCount(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCoPSIBCoexTurnOnDuration(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setGatewayAddress(apple80211_infra_peer_address_data);  // TODO: return type
-    virtual IOReturn /*RT?*/ setUnicastInfraPeerAddress(apple80211_infra_peer_address_data);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInfraPeersLoggingEnabled(bool);  // TODO: return type
+    virtual IOReturn getAwdlMaxBandWidth(void); // RT?
+    virtual IOReturn get5GLowHighBandSwitchCounter(void); // RT?
+    virtual IOReturn get5GLowHighBandSwitchSuccessPerc(void); // RT?
+    virtual IOReturn getULLAClassicDuration(void); // RT?
+    virtual IOReturn getCoPTxRTSFailCount(void); // RT?
+    virtual IOReturn getULLALiteDuration(void); // RT?
+    virtual IOReturn resetCoPTxRTSFailCount(void); // RT?
+    virtual IOReturn resetSIBTurnOnMetrics(void); // RT?
+    virtual IOReturn getCoPSIBCoexTurnOnCount(void); // RT?
+    virtual IOReturn getCoPSIBCoexTurnOnDuration(void); // RT?
+    virtual IOReturn setGatewayAddress(apple80211_infra_peer_address_data); // RT?
+    virtual IOReturn setUnicastInfraPeerAddress(apple80211_infra_peer_address_data); // RT?
+    virtual IOReturn setInfraPeersLoggingEnabled(bool); // RT?
     virtual IOReturn recordCompletionPackets(TxCompletionEnqueueStats *,TxCompletionEnqueueStats *);
     virtual void logTxCompletionPacket(IO80211NetworkPacket *,PacketSkywalkScratch *,unsigned char *,apple80211_wme_ac,int,unsigned int,bool,bool);
     virtual mbuf_flags_t inputPacket(IO80211NetworkPacket *,packet_info_tag *,ether_header *,bool *,bool);
     virtual void updateLinkParameters(apple80211_interface_availability *);
-    virtual IOReturn /*RT?*/ updateLinkParametersStatic(void *,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateLinkParametersGated(apple80211_interface_availability *);  // TODO: return type
+    virtual IOReturn updateLinkParametersStatic(void *,void *); // RT?
+    virtual IOReturn updateLinkParametersGated(apple80211_interface_availability *); // RT?
     virtual void updateInterfaceCoexRiskPct(unsigned long long);
-    virtual IOReturn /*RT?*/ reportDataTransferRates(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setBTCoexWLANLostAntennaTime(unsigned long long,unsigned long long,bool,apple80211_btCoex_report *);  // TODO: return type
-    virtual IOReturn /*RT?*/ reportDataTransferRatesStatic(void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLQMData(void);  // TODO: return type
+    virtual IOReturn reportDataTransferRates(void); // RT?
+    virtual IOReturn setBTCoexWLANLostAntennaTime(unsigned long long,unsigned long long,bool,apple80211_btCoex_report *); // RT?
+    virtual IOReturn reportDataTransferRatesStatic(void *); // RT?
+    virtual IOReturn getLQMData(void); // RT?
     virtual void setLQM(unsigned long long);
-    virtual IOReturn /*RT?*/ setLQMStatic(void *,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLQMGated(unsigned long long);  // TODO: return type
+    virtual IOReturn setLQMStatic(void *,void *); // RT?
+    virtual IOReturn setLQMGated(unsigned long long); // RT?
     virtual void updateLinkStatus(void);
-    virtual IOReturn /*RT?*/ updateLinkStatusStatic(void *);  // TODO: return type
+    virtual IOReturn updateLinkStatusStatic(void *); // RT?
     virtual void updateLinkStatusGated(void);
     virtual void setInterfaceExtendedCCA(apple80211_channel,apple80211_cca_report *);
     virtual void setInterfaceCCA(apple80211_channel,int);
     virtual void setInterfaceNF(apple80211_channel,long long);
     virtual void setInterfaceOFDMDesense(apple80211_channel,long long);
-    virtual IOReturn /*RT?*/ setAMPDUstat(apple80211_stat_report *,apple80211_ampdu_stat_report *);  // TODO: return type
+    virtual IOReturn setAMPDUstat(apple80211_stat_report *,apple80211_ampdu_stat_report *); // RT?
     virtual void setDataPathState(bool);
     virtual void setDebugFlags(unsigned long long,unsigned int);
     virtual void setPeerManagerLogFlag(unsigned int,unsigned int,unsigned int);
@@ -299,154 +334,153 @@ public:
     virtual void setFrameStats(apple80211_stat_report *,apple80211_frame_counters *);
     virtual void setInfraSpecificFrameStats(apple80211_stat_report *,apple80211_infra_specific_stats *);
     virtual SInt64 getWmeTxCounters(unsigned long long *);
-    virtual IOReturn /*RT?*/ resetTxPathHealthCheck(void);  // TODO: return type
+    virtual IOReturn resetTxPathHealthCheck(void); // RT?
     virtual UInt64 createLinkQualityMonitor(IO80211Peer *,IOService *);
-    virtual IOReturn /*RT?*/ getInfraLinkProperties(IO80211Peer *,unsigned int &,unsigned int &,apple80211_channel &,apple80211_channel_width &,apple80211_phymode &,apple80211_channel_band &);  // TODO: return type
+    virtual IOReturn getInfraLinkProperties(IO80211Peer *,unsigned int &,unsigned int &,apple80211_channel &,apple80211_channel_width &,apple80211_phymode &,apple80211_channel_band &); // RT?
     virtual void releaseLinkQualityMonitor(IO80211Peer *);
-    virtual IOReturn /*RT?*/ notifyAWDLStateChange(bool);  // TODO: return type
+    virtual IOReturn notifyAWDLStateChange(bool); // RT?
     virtual int bpfOutputPacket(__mbuf *,void *);
-    virtual IOReturn /*RT?*/ bpfOutput(unsigned int,__mbuf *);  // TODO: return type
+    virtual IOReturn bpfOutput(unsigned int,__mbuf *); // RT?
     virtual bool bpfTap(unsigned int,unsigned int);
-    virtual IOReturn /*RT?*/ bpfTapInternal(unsigned int,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getWMMBWReset(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setWMMBWReset(bool);  // TODO: return type
+    virtual IOReturn bpfTapInternal(unsigned int,unsigned int); // RT?
+    virtual IOReturn getWMMBWReset(void); // RT?
+    virtual IOReturn setWMMBWReset(bool); // RT?
     virtual bool wowEnabled(void);
-    virtual IOReturn /*RT?*/ getScanManager(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMonitorMode(void);  // TODO: return type
+    virtual IOReturn getScanManager(void); // RT?
+    virtual IOReturn getMonitorMode(void); // RT?
     virtual SInt64 pendingPackets(unsigned char);
     virtual SInt64 packetSpace(unsigned char);
-    virtual IOReturn /*RT?*/ getLQMSummary(apple80211_lqm_summary *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTrafficMonitor(void);  // TODO: return type
+    virtual IOReturn getLQMSummary(apple80211_lqm_summary *); // RT?
+    virtual IOReturn getTrafficMonitor(void); // RT?
     virtual UInt getHardwareAssists(void);
     virtual int getAssocState(void);
-    virtual IOReturn /*RT?*/ setCurrentApAddress(ether_addr *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCurrentApAddress(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLQMConfig(apple80211_lqm_config_t *);  // TODO: return type
+    virtual IOReturn setCurrentApAddress(ether_addr *); // RT?
+    virtual IOReturn getCurrentApAddress(void); // RT?
+    virtual IOReturn setLQMConfig(apple80211_lqm_config_t *); // RT?
     virtual SInt32 setInterfaceEnable(bool);
-    virtual IOReturn /*RT?*/ onDispatchQueue(void);  // TODO: return type
+    virtual IOReturn onDispatchQueue(void); // RT?
     virtual void setWCL_ADVISORTY_INFO(apple80211_wcl_advisory_info *);
-    virtual IOReturn /*RT?*/ getWCL_TX_RX_LATENCY(apple80211_wcl_tx_rx_latency *);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateTxRxLatency(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setIPv4Params(apple80211_ipv4_params *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getIPv4Params(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setIPv6Params(apple80211_ipv6_params *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getIPv6Params(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPacketFilterData(apple80211_packet_filter_data &);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTcpUdpKeepAliveData(apple80211_tcp_udp_keepalive_data &);  // TODO: return type
-    virtual IOReturn /*RT?*/ bonjourOffloadNumActivePorts(unsigned int &);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTcpKeepAliveConfigData(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getBonjourOffloadConfigData(unsigned short &,unsigned int &);  // TODO: return type
-    virtual IOReturn /*RT?*/ getArpKeepAliveData(apple80211_arp_keepalive_data &,bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ getProtocolOffloadData(apple80211_protocol_offload_data &);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMagicPatternData(apple80211_magic_pattern_data &);  // TODO: return type
+    virtual IOReturn getWCL_TX_RX_LATENCY(apple80211_wcl_tx_rx_latency *); // RT?
+    virtual IOReturn updateTxRxLatency(void); // RT?
+    virtual IOReturn setIPv4Params(apple80211_ipv4_params *); // RT?
+    virtual IOReturn getIPv4Params(void); // RT?
+    virtual IOReturn setIPv6Params(apple80211_ipv6_params *); // RT?
+    virtual IOReturn getIPv6Params(void); // RT?
+    virtual IOReturn getPacketFilterData(apple80211_packet_filter_data &); // RT?
+    virtual IOReturn getTcpUdpKeepAliveData(apple80211_tcp_udp_keepalive_data &); // RT?
+    virtual IOReturn bonjourOffloadNumActivePorts(unsigned int &); // RT?
+    virtual IOReturn getTcpKeepAliveConfigData(void); // RT?
+    virtual IOReturn getBonjourOffloadConfigData(unsigned short &,unsigned int &); // RT?
+    virtual IOReturn getArpKeepAliveData(apple80211_arp_keepalive_data &,bool); // RT?
+    virtual IOReturn getProtocolOffloadData(apple80211_protocol_offload_data &); // RT?
+    virtual IOReturn getMagicPatternData(apple80211_magic_pattern_data &); // RT?
     virtual IOReturn getSTATS(apple80211_stats_data *);
-    virtual IOReturn /*RT?*/ getBtCoexState(void);  // TODO: return type
+    virtual IOReturn getBtCoexState(void); // RT?
     virtual IOReturn getBT_COEX_FLAGS(apple80211_state_data *);
     virtual IOReturn setBT_COEX_FLAGS(apple80211_state_data *);
     virtual IOReturn setPowerState(unsigned long,IOService *);
-    virtual IOReturn /*RT?*/ setWCLSystemState(apple80211_system_state &);  // TODO: return type
+    virtual IOReturn setWCLSystemState(apple80211_system_state &); // RT?
     virtual void hwConfigNicProxyData(nicproxy_info_s *);
-    virtual IOReturn /*RT?*/ setLeScanParams(apple80211_le_scan_params &);  // TODO: return type
-    virtual IOReturn /*RT?*/ getHwChannels(apple80211_sup_channel_data &);  // TODO: return type
-    virtual IOReturn /*RT?*/ registerInfraEthernetInterface(IOSkywalkEthernetInterface::RegistrationInfo *,IOSkywalkPacketQueue * *,unsigned int,IOSkywalkPacketBufferPool *,IOSkywalkPacketBufferPool *);  // TODO: return type
+    virtual IOReturn setLeScanParams(apple80211_le_scan_params &); // RT?
+    virtual IOReturn getHwChannels(apple80211_sup_channel_data &); // RT?
+    virtual IOReturn registerInfraEthernetInterface(IOSkywalkEthernetInterface::RegistrationInfo *,IOSkywalkPacketQueue * *,unsigned int,IOSkywalkPacketBufferPool *,IOSkywalkPacketBufferPool *); // RT?
     virtual IOReturn getLOCALE(apple80211_locale_data *);
 };
 
 class IO80211VirtualInterface : public IO80211SkywalkInterface {
 public:
-    virtual IOReturn /*RT?*/ IO80211VirtualInterface(OSMetaClass const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMetaClass(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface0(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface1(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface2(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface3(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface4(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface5(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface6(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface7(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface8(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface9(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface10(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface11(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface12(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface13(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface14(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211VirtualInterface15(void);  // TODO: return type
+    virtual IOReturn getMetaClass(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface0(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface1(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface2(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface3(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface4(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface5(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface6(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface7(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface8(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface9(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface10(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface11(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface12(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface13(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface14(void); // RT?
+    virtual IOReturn _RESERVEDIO80211VirtualInterface15(void); // RT?
     virtual bool attach(IOService *);
     virtual void detach(IOService *);
-    virtual IOReturn /*RT?*/ peerToPeerAttachToBpf(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ bpfAttachEN10MB(unsigned int);  // TODO: return type
+    virtual IOReturn peerToPeerAttachToBpf(void); // RT?
+    virtual IOReturn bpfAttachEN10MB(unsigned int); // RT?
     virtual bool attachToBpf(void);
-    virtual IOReturn /*RT?*/ isPeerToPeerInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ freeBpfResources(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ allocBpfResources(void);  // TODO: return type
+    virtual IOReturn isPeerToPeerInterface(void); // RT?
+    virtual IOReturn freeBpfResources(void); // RT?
+    virtual IOReturn allocBpfResources(void); // RT?
     virtual bool init(IO80211Controller *,ether_addr *,unsigned int,char const *);
-    virtual IOReturn /*RT?*/ logDebug(char const *,...);  // TODO: return type
+    virtual IOReturn logDebug(char const *,...); // RT?
     virtual bool start(IOService *);
     virtual IOReturn enable(unsigned int);
     virtual bool createPeerManager(void);
-    virtual IOReturn /*RT?*/ setInfraChannel(apple80211_channel *);  // TODO: return type
-    virtual IOReturn /*RT?*/ handleChannelSwitchAnnouncement(apple80211_channel_switch_announcement *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setJoiningState(unsigned int,joinStatus,bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ isAwdlAssistedDiscoveryEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ notifyHostapState(apple80211_hostap_state *);  // TODO: return type
-    virtual const char* stringFromReturn(int);
+    virtual IOReturn setInfraChannel(apple80211_channel *); // RT?
+    virtual IOReturn handleChannelSwitchAnnouncement(apple80211_channel_switch_announcement *); // RT?
+    virtual IOReturn setJoiningState(unsigned int,joinStatus,bool); // RT?
+    virtual IOReturn isAwdlAssistedDiscoveryEnabled(void); // RT?
+    virtual IOReturn notifyHostapState(apple80211_hostap_state *); // RT?
+    virtual const char stringFromReturn(int);
     virtual UInt32 configureAQMOutput(void);
     virtual void free(void);
     virtual bool terminate(unsigned int);
     virtual void stop(IOService *);
-    virtual IOReturn /*RT?*/ configureBpfOutputQueues(bool);  // TODO: return type
+    virtual IOReturn configureBpfOutputQueues(bool); // RT?
     virtual int bpfOutputPacket(__mbuf *,void *);
     virtual bool bpfTap(unsigned int,unsigned int);
-    virtual IOReturn /*RT?*/ bpfTapInput(__mbuf *,unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMgmtFramePool(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ bpfTapInput(IO80211Buffer *,unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ sendToBpfTap(IO80211Buffer *,unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ peerToPeerConfigureIfnet(void);  // TODO: return type
+    virtual IOReturn bpfTapInput(__mbuf *,unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn getMgmtFramePool(void); // RT?
+    virtual IOReturn bpfTapInput(IO80211Buffer *,unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn sendToBpfTap(IO80211Buffer *,unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn peerToPeerConfigureIfnet(void); // RT?
     virtual bool configureIfnet(void);
-    virtual IOReturn /*RT?*/ dequeueTxPackets(TxPacketRequest *);  // TODO: return type
-    virtual IOReturn /*RT?*/ storeProcessNameAndIoctlInformation(unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ storeIoctlInArray(OSArray *,OSNumber *);  // TODO: return type
-    virtual IOReturn /*RT?*/ logDebug(unsigned long long,char const *,...);  // TODO: return type
-    virtual IOReturn /*RT?*/ dumpUnentitledProcesses(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ ioctl_internal_gated(void *,void *,void *,void *,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ ioctl_internal(void *);  // TODO: return type
+    virtual IOReturn dequeueTxPackets(TxPacketRequest *); // RT?
+    virtual IOReturn storeProcessNameAndIoctlInformation(unsigned long); // RT?
+    virtual IOReturn storeIoctlInArray(OSArray *,OSNumber *); // RT?
+    virtual IOReturn logDebug(unsigned long long,char const *,...); // RT?
+    virtual IOReturn dumpUnentitledProcesses(void); // RT?
+    virtual IOReturn ioctl_internal_gated(void *,void *,void *,void *,void *); // RT?
+    virtual IOReturn ioctl_internal(void *); // RT?
     virtual bool prepareBSDInterface(__ifnet *,unsigned int);
     virtual IOReturn processBSDCommand(__ifnet *,unsigned int,void *);
     virtual UInt32 getFeatureFlags(void);
     virtual SInt32 setInterfaceEnable(bool);
     virtual bool setMulticastAddresses(ether_addr const *,unsigned int);
     virtual void handleIoctl(__ifnet *,unsigned long,void *);
-    virtual IOReturn /*RT?*/ handleIoctlGated(void *,void *,void *,void *,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ terminating(void);  // TODO: return type
+    virtual IOReturn handleIoctlGated(void *,void *,void *,void *,void *); // RT?
+    virtual IOReturn terminating(void); // RT?
     virtual void setScanningState(unsigned int,bool,apple80211_scan_data *,int);
-    virtual IOReturn /*RT?*/ setInfraTxState(bool);  // TODO: return type
+    virtual IOReturn setInfraTxState(bool); // RT?
     virtual void updateLinkParameters(apple80211_interface_availability *);
     virtual void updateInterfaceCoexRiskPct(unsigned long long);
-    virtual IOReturn /*RT?*/ postAwdlStatistics(apple80211_awdl_statistics *);  // TODO: return type
-    virtual IOReturn /*RT?*/ IO80211InterfacePostMessage(unsigned int,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ postSyncStateChanged(void);  // TODO: return type
+    virtual IOReturn postAwdlStatistics(apple80211_awdl_statistics *); // RT?
+    virtual IOReturn IO80211InterfacePostMessage(unsigned int,void *,unsigned long); // RT?
+    virtual IOReturn postSyncStateChanged(void); // RT?
     virtual SInt64 getWmeTxCounters(unsigned long long *);
     virtual void logSkywalkTxReqPacket(IO80211NetworkPacket *,PacketSkywalkScratch *,unsigned char *,apple80211_wme_ac,bool);
     virtual void flushPacketQueues(void);
     virtual void removePacketQueue(IO80211FlowQueueHash const *);
-    virtual IOReturn /*RT?*/ getPacketQueueDatabase(void);  // TODO: return type
+    virtual IOReturn getPacketQueueDatabase(void); // RT?
     virtual SInt64 pendingPackets(unsigned char);
-    virtual IOReturn /*RT?*/ queueSize(unsigned char);  // TODO: return type
+    virtual IOReturn queueSize(unsigned char); // RT?
     virtual SInt64 packetSpace(unsigned char);
     virtual UInt64 findExistingFlowQueue(IO80211FlowQueueHash);
     virtual void cachePeer(ether_addr *,unsigned int *);
-    virtual IOReturn /*RT?*/ isPeerManagerDataDisabled(void);  // TODO: return type
+    virtual IOReturn isPeerManagerDataDisabled(void); // RT?
     virtual bool findOrCreateFlowQueue(IO80211FlowQueueHash);
     virtual UInt64 findOrCreateFlowQueueWithCache(IO80211FlowQueueHash,bool *);
-    virtual IOReturn /*RT?*/ dropTxPacket(__mbuf *);  // TODO: return type
-    virtual IOReturn /*RT?*/ reportTransmitCompletionStatus(__mbuf *,int,unsigned int,unsigned int,unsigned int);  // TODO: return type
+    virtual IOReturn dropTxPacket(__mbuf *); // RT?
+    virtual IOReturn reportTransmitCompletionStatus(__mbuf *,int,unsigned int,unsigned int,unsigned int); // RT?
     virtual bool isOutputFlowControlled(void);
     virtual void setOutputFlowControlled(void);
     virtual void clearOutputFlowControlled(void);
-    virtual IOReturn /*RT?*/ forwardPacket(IO80211NetworkPacket *);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetUserClientReference(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetUserClientReferenceGated(OSObject *,void *,void *,void *,void *);  // TODO: return type
+    virtual IOReturn forwardPacket(IO80211NetworkPacket *); // RT?
+    virtual IOReturn resetUserClientReference(void); // RT?
+    virtual IOReturn resetUserClientReferenceGated(OSObject *,void *,void *,void *,void *); // RT?
     virtual void postMessage(unsigned int,void *,unsigned long,bool);
     virtual void setDebugFlags(unsigned long long,unsigned int);
     virtual SInt64 debugFlags(void);
@@ -460,244 +494,239 @@ public:
     virtual void setInterfaceMIBdot11(apple80211_stat_report *,apple80211_ManagementInformationBasedot11_counters *);
     virtual void setFrameStats(apple80211_stat_report *,apple80211_frame_counters *);
     virtual void setInfraSpecificFrameStats(apple80211_stat_report *,apple80211_infra_specific_stats *);
-    virtual IOReturn /*RT?*/ setAMPDUstat(apple80211_stat_report *,apple80211_ampdu_stat_report *);  // TODO: return type
-    virtual IOReturn /*RT?*/ pushPacket(__mbuf *);  // TODO: return type
+    virtual IOReturn setAMPDUstat(apple80211_stat_report *,apple80211_ampdu_stat_report *); // RT?
+    virtual IOReturn pushPacket(__mbuf *); // RT?
     virtual mbuf_flags_t inputPacket(IO80211NetworkPacket *,packet_info_tag *,ether_header *,bool *,bool);
     virtual void logTxPacket(IO80211NetworkPacket *,PacketSkywalkScratch *,apple80211_wme_ac,bool);
     virtual void logTxCompletionPacket(IO80211NetworkPacket *,PacketSkywalkScratch *,unsigned char *,apple80211_wme_ac,int,unsigned int,bool,bool);
-    virtual IOReturn /*RT?*/ getOutputQueueForDLT(unsigned int);  // TODO: return type
+    virtual IOReturn getOutputQueueForDLT(unsigned int); // RT?
     virtual void handleDebugCmd(apple80211_debug_command *);
     virtual void printDataPath(userPrintCtx *);
-    virtual void vlogDebug(unsigned long long,char const *,__va_list_tag *);
-    virtual void vlogDebugBPF(unsigned long long,char const *,__va_list_tag *);
     virtual bool shouldLog(unsigned long long);
     virtual IOReturn configureReport(IOReportChannelList *,unsigned int,void *,void *);
-    virtual IOReturn /*RT?*/ getCompanionLowLatencySkywalkInterface(void);  // TODO: return type
+    virtual IOReturn getCompanionLowLatencySkywalkInterface(void); // RT?
     virtual IOReturn updateReport(IOReportChannelList *,unsigned int,void *,void *);
-    virtual IOReturn /*RT?*/ postAwdlHppStatsEvent(apple80211_awdl_low_latency_statistics_reduced *);  // TODO: return type
-    virtual IOReturn /*RT?*/ postLowlatencyStatistics(apple80211_nan_low_latency_peer_statistics *);  // TODO: return type
-    virtual IOReturn /*RT?*/ postP2PAirplayStatistics(apple80211_p2p_airplay_statistics *);  // TODO: return type
-    virtual IOReturn /*RT?*/ postHostapChannelChanged(apple80211_hostap_state *);  // TODO: return type
-    virtual IOReturn /*RT?*/ postP2pThreadCoexEvent(apple80211_p2p_thread_coex_event *);  // TODO: return type
-    virtual IOReturn /*RT?*/ postHostAPBandUpdate(apple80211_channel_band);  // TODO: return type
-    virtual IOReturn /*RT?*/ startAsyncEventUserClientForTask(task *,kIO80211InterfaceType);  // TODO: return type
+    virtual IOReturn postAwdlHppStatsEvent(apple80211_awdl_low_latency_statistics_reduced *); // RT?
+    virtual IOReturn postLowlatencyStatistics(apple80211_nan_low_latency_peer_statistics *); // RT?
+    virtual IOReturn postP2PAirplayStatistics(apple80211_p2p_airplay_statistics *); // RT?
+    virtual IOReturn postHostapChannelChanged(apple80211_hostap_state *); // RT?
+    virtual IOReturn postP2pThreadCoexEvent(apple80211_p2p_thread_coex_event *); // RT?
+    virtual IOReturn postHostAPBandUpdate(apple80211_channel_band); // RT?
+    virtual IOReturn startAsyncEventUserClientForTask(task *,kIO80211InterfaceType); // RT?
     virtual int getEventPipeSize(void);
     virtual UInt64 createEventPipe(IO80211APIUserClient *);
-    virtual IOReturn /*RT?*/ p2pDaemonExited(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ p2pDaemonExitedStatic(void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ p2pDaemonExitedGated(void);  // TODO: return type
+    virtual IOReturn p2pDaemonExited(void); // RT?
+    virtual IOReturn p2pDaemonExitedStatic(void *); // RT?
+    virtual IOReturn p2pDaemonExitedGated(void); // RT?
     virtual IOReturn newUserClient(task *,void *,unsigned int,OSDictionary *,IOUserClient * *);
-    virtual IOReturn /*RT?*/ addPeerToCache(unsigned char *);  // TODO: return type
-    virtual IOReturn /*RT?*/ deletePeerFromCache(unsigned char *);  // TODO: return type
-    virtual IOReturn /*RT?*/ reset(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setDisplayState(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ getP2PSkywalkPeerMgr(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ wmmSupported(void);  // TODO: return type
+    virtual IOReturn addPeerToCache(unsigned char *); // RT?
+    virtual IOReturn deletePeerFromCache(unsigned char *); // RT?
+    virtual IOReturn reset(void); // RT?
+    virtual IOReturn setDisplayState(bool); // RT?
+    virtual IOReturn getP2PSkywalkPeerMgr(void); // RT?
+    virtual IOReturn wmmSupported(void); // RT?
     virtual bool wowEnabled(void);
-    virtual IOReturn /*RT?*/ getRoamingFlags(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setRoamingFlags(unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ setCompanionLowLatencySkywalkInterface(IO80211SkywalkInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ dupAndTransmitMcastPacket(IO80211NetworkPacket *,unsigned char *,unsigned char *);  // TODO: return type
-    virtual IOReturn /*RT?*/ modifyUnicastPacket(unsigned char *,unsigned int,unsigned char,unsigned int *,unsigned char *);  // TODO: return type
-    virtual IOReturn /*RT?*/ handleMulticastTransmit(IO80211NetworkPacket *,unsigned char *,unsigned int,unsigned char);  // TODO: return type
-    virtual IOReturn /*RT?*/ freeMulticastPacket(IO80211NetworkPacket *);  // TODO: return type
-    virtual IOReturn /*RT?*/ triggerAWDLMulticastTx(unsigned int,unsigned char);  // TODO: return type
-    virtual IOReturn /*RT?*/ p2pMulticastTx(IO80211NetworkPacket * *,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInterfaceSuspended(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ clearInterfaceSuspended(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isInterfaceSuspended(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setPeerManagerDataDisabled(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPeerManagerDataDisabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ stashMulticastPacketPair(IO80211NetworkPacket *,IO80211NetworkPacket *);  // TODO: return type
-    virtual IOReturn /*RT?*/ sendPendingPacketsToStack(IO80211NetworkPacket * *,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ freePendingPackets(IO80211NetworkPacket * *,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ setAwdlCurrentChannelSequenceIndex(unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPeerSlotDataStats(ether_addr *,bool,peerSlotDataStats *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPeerDataStats(ether_addr *,bool,packetCounters_t *);  // TODO: return type
-    virtual IOReturn /*RT?*/ clearPeerDataStats(ether_addr *,bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ findPeer(ether_addr &);  // TODO: return type
+    virtual IOReturn getRoamingFlags(void); // RT?
+    virtual IOReturn setRoamingFlags(unsigned int); // RT?
+    virtual IOReturn setCompanionLowLatencySkywalkInterface(IO80211SkywalkInterface *); // RT?
+    virtual IOReturn dupAndTransmitMcastPacket(IO80211NetworkPacket *,unsigned char *,unsigned char *); // RT?
+    virtual IOReturn modifyUnicastPacket(unsigned char *,unsigned int,unsigned char,unsigned int *,unsigned char *); // RT?
+    virtual IOReturn handleMulticastTransmit(IO80211NetworkPacket *,unsigned char *,unsigned int,unsigned char); // RT?
+    virtual IOReturn freeMulticastPacket(IO80211NetworkPacket *); // RT?
+    virtual IOReturn triggerAWDLMulticastTx(unsigned int,unsigned char); // RT?
+    virtual IOReturn p2pMulticastTx(IO80211NetworkPacket * *,unsigned int); // RT?
+    virtual IOReturn setInterfaceSuspended(void); // RT?
+    virtual IOReturn clearInterfaceSuspended(void); // RT?
+    virtual IOReturn isInterfaceSuspended(void); // RT?
+    virtual IOReturn setPeerManagerDataDisabled(bool); // RT?
+    virtual IOReturn getPeerManagerDataDisabled(void); // RT?
+    virtual IOReturn stashMulticastPacketPair(IO80211NetworkPacket *,IO80211NetworkPacket *); // RT?
+    virtual IOReturn sendPendingPacketsToStack(IO80211NetworkPacket * *,unsigned int); // RT?
+    virtual IOReturn freePendingPackets(IO80211NetworkPacket * *,unsigned int); // RT?
+    virtual IOReturn setAwdlCurrentChannelSequenceIndex(unsigned int); // RT?
+    virtual IOReturn getPeerSlotDataStats(ether_addr *,bool,peerSlotDataStats *); // RT?
+    virtual IOReturn getPeerDataStats(ether_addr *,bool,packetCounters_t *); // RT?
+    virtual IOReturn clearPeerDataStats(ether_addr *,bool); // RT?
+    virtual IOReturn findPeer(ether_addr &); // RT?
 };
 
 class IO80211Controller : public IOEthernetController {
 public:
-    virtual IOReturn /*RT?*/ IO80211Controller(OSMetaClass const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMetaClass(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller0(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller1(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller2(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller3(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller4(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller5(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller6(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller7(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller8(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller9(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller10(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller11(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller12(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller13(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller14(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ _RESERVEDIO80211Controller15(void);  // TODO: return type
+    virtual IOReturn getMetaClass(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller0(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller1(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller2(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller3(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller4(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller5(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller6(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller7(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller8(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller9(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller10(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller11(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller12(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller13(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller14(void); // RT?
+    virtual IOReturn _RESERVEDIO80211Controller15(void); // RT?
     virtual bool start(IOService *);
-    virtual IOReturn /*RT?*/ setGlobalLogger(CCLogStream *);  // TODO: return type
-    virtual IOReturn /*RT?*/ createIOReporters(IOService *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setupControlPathLogging(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ findAndAttachToFaultReporter(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logDebug(char const *,...);  // TODO: return type
-    virtual IOReturn /*RT?*/ GetProvider(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ handleIOReporterLegendIsCalm(IO80211TimerSource *);  // TODO: return type
-    virtual IOReturn /*RT?*/ allocFramePool(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getReporterProvider(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTimerFactory(void);  // TODO: return type
+    virtual IOReturn setGlobalLogger(CCLogStream *); // RT?
+    virtual IOReturn createIOReporters(IOService *); // RT?
+    virtual IOReturn setupControlPathLogging(void); // RT?
+    virtual IOReturn findAndAttachToFaultReporter(void); // RT?
+    virtual IOReturn logDebug(char const *,...); // RT?
+    virtual IOReturn GetProvider(void); // RT?
+    virtual IOReturn handleIOReporterLegendIsCalm(IO80211TimerSource *); // RT?
+    virtual IOReturn allocFramePool(void); // RT?
+    virtual IOReturn getReporterProvider(void); // RT?
+    virtual IOReturn getTimerFactory(void); // RT?
     virtual bool init(OSDictionary *);
-    virtual IOReturn /*RT?*/ debugStateInit(void);  // TODO: return type
+    virtual IOReturn debugStateInit(void); // RT?
     virtual void free(void);
     virtual void stop(IOService *);
-    virtual IOReturn /*RT?*/ releaseIOReporters(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ refreshFamilyLQMLogs(FamilyLqmLogId,char *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getFamilyLQMLogs(apple80211_lqm_summary *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInfraChannel(apple80211_channel *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getAwdlInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ calculateInterfacesCoex(void);  // TODO: return type
-    virtual IO80211FlowQueueLegacy* requestFlowQueue(FlowIdMetadata const *);
+    virtual IOReturn releaseIOReporters(void); // RT?
+    virtual IOReturn refreshFamilyLQMLogs(FamilyLqmLogId,char *); // RT?
+    virtual IOReturn getFamilyLQMLogs(apple80211_lqm_summary *); // RT?
+    virtual IOReturn setInfraChannel(apple80211_channel *); // RT?
+    virtual IOReturn getAwdlInterface(void); // RT?
+    virtual IOReturn calculateInterfacesCoex(void); // RT?
+    virtual IO80211FlowQueueLegacy requestFlowQueue(FlowIdMetadata const *);
     virtual void releaseFlowQueue(IO80211FlowQueue *);
-    virtual IOReturn /*RT?*/ dispatchPacket(__mbuf *,unsigned int,char *,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getDriverTextLog(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isStarted(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logDebug(unsigned long long,char const *,...);  // TODO: return type
-    virtual IOReturn /*RT?*/ io80211isDebuggable(bool *);  // TODO: return type
-    virtual void vlogDebug(unsigned long long,char const *,__va_list_tag *);
-    virtual void vlogDebugBPF(unsigned long long,char const *,__va_list_tag *);
-    virtual IOReturn /*RT?*/ clearLogTargets(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLogTarget(IO80211VirtualInterface *,bool);  // TODO: return type
+    virtual IOReturn dispatchPacket(__mbuf *,unsigned int,char *,unsigned int); // RT?
+    virtual IOReturn getDriverTextLog(void); // RT?
+    virtual IOReturn isStarted(void); // RT?
+    virtual IOReturn logDebug(unsigned long long,char const *,...); // RT?
+    virtual IOReturn io80211isDebuggable(bool *); // RT?
+    virtual IOReturn clearLogTargets(void); // RT?
+    virtual IOReturn setLogTarget(IO80211VirtualInterface *,bool); // RT?
     virtual UInt32 selfDiagnosticsReport(int,char const *,unsigned int);
-    virtual IOReturn /*RT?*/ getHtCapabilityLength(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getHtCapability(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setHtCapability(ieee80211_ht_capability_ie *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setCurrentChannel(apple80211_channel *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setPrimaryInterfaceDatapathState(bool);  // TODO: return type
-    virtual IOReturn /*RT?*/ setChannelSequenceList(apple80211_awdl_sync_channel_sequence *);  // TODO: return type
-    virtual IOReturn /*RT?*/ calculateInterfacesAvaiability(void);  // TODO: return type
+    virtual IOReturn getHtCapabilityLength(void); // RT?
+    virtual IOReturn getHtCapability(void); // RT?
+    virtual IOReturn setHtCapability(ieee80211_ht_capability_ie *); // RT?
+    virtual IOReturn setCurrentChannel(apple80211_channel *); // RT?
+    virtual IOReturn setPrimaryInterfaceDatapathState(bool); // RT?
+    virtual IOReturn setChannelSequenceList(apple80211_awdl_sync_channel_sequence *); // RT?
+    virtual IOReturn calculateInterfacesAvaiability(void); // RT?
     virtual void updateInterfaceCoexRiskPct(unsigned long long);
-    virtual IOReturn /*RT?*/ printChannels(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ scanStarted(scanSource,apple80211_scan_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ scanDone(scanSource,int);  // TODO: return type
-    virtual IOReturn /*RT?*/ handleChannelSwitchAnnouncement(apple80211_channel_switch_announcement *);  // TODO: return type
-    virtual IOReturn /*RT?*/ joinStarted(scanSource,joinStatus);  // TODO: return type
-    virtual IOReturn /*RT?*/ joinDone(scanSource,joinStatus);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPid(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getProcessName(char *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ isAwdlAssistedDiscoveryEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ notifyHostapState(apple80211_hostap_state *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getNanInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ nanConnectionStarted(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ inputInfraPacket(__mbuf *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getSSIDData(apple80211_ssid_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getSSIDTransitionEnabled(apple80211_ssid_transition_feature_enabled *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getBSSIDData(IO80211SkywalkInterface *,apple80211_bssid_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getBeaconPeriod(apple80211_beacon_period_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getDTIMInt(apple80211_dtim_int_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setPowerStats(apple80211_stat_report *,apple80211_power_debug_sub_info *);  // TODO: return type
+    virtual IOReturn printChannels(void); // RT?
+    virtual IOReturn scanStarted(scanSource,apple80211_scan_data *); // RT?
+    virtual IOReturn scanDone(scanSource,int); // RT?
+    virtual IOReturn handleChannelSwitchAnnouncement(apple80211_channel_switch_announcement *); // RT?
+    virtual IOReturn joinStarted(scanSource,joinStatus); // RT?
+    virtual IOReturn joinDone(scanSource,joinStatus); // RT?
+    virtual IOReturn getPid(void); // RT?
+    virtual IOReturn getProcessName(char *,unsigned long); // RT?
+    virtual IOReturn isAwdlAssistedDiscoveryEnabled(void); // RT?
+    virtual IOReturn notifyHostapState(apple80211_hostap_state *); // RT?
+    virtual IOReturn getNanInterface(void); // RT?
+    virtual IOReturn nanConnectionStarted(void); // RT?
+    virtual IOReturn inputInfraPacket(__mbuf *); // RT?
+    virtual IOReturn getSSIDData(apple80211_ssid_data *); // RT?
+    virtual IOReturn getSSIDTransitionEnabled(apple80211_ssid_transition_feature_enabled *); // RT?
+    virtual IOReturn getBSSIDData(IO80211SkywalkInterface *,apple80211_bssid_data *); // RT?
+    virtual IOReturn getBeaconPeriod(apple80211_beacon_period_data *); // RT?
+    virtual IOReturn getDTIMInt(apple80211_dtim_int_data *); // RT?
+    virtual IOReturn setPowerStats(apple80211_stat_report *,apple80211_power_debug_sub_info *); // RT?
     virtual void setFrameStats(apple80211_stat_report *,apple80211_frame_counters *,apple80211_channel *);
     virtual void setInfraSpecificFrameStats(apple80211_stat_report *,apple80211_infra_specific_stats *);
-    virtual IOReturn /*RT?*/ setLeakyAPStats(apple80211_leaky_ap_event *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setChipCounterStats(apple80211_stat_report *,apple80211_chip_stats *,apple80211_channel *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setExtendedChipCounterStats(apple80211_stat_report *,void *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInfraChannel(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInfraChannel(apple80211_channel_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setCountryCode(apple80211_country_code_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCountryCode(apple80211_country_code_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setAMPDUstat(apple80211_stat_report *,apple80211_ampdu_stat_report *,apple80211_channel *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setBTCoexstat(apple80211_stat_report *,apple80211_btCoex_report *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLTECoexstat(apple80211_stat_report *,apple80211_lteCoex_report *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setChanExtendedCCA(apple80211_stat_report *,apple80211_cca_report *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setChanCCA(apple80211_stat_report *,int);  // TODO: return type
-    virtual IOReturn /*RT?*/ setInterfaceRSSI(int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceMonitor(void);  // TODO: return type
+    virtual IOReturn setLeakyAPStats(apple80211_leaky_ap_event *); // RT?
+    virtual IOReturn setChipCounterStats(apple80211_stat_report *,apple80211_chip_stats *,apple80211_channel *); // RT?
+    virtual IOReturn setExtendedChipCounterStats(apple80211_stat_report *,void *); // RT?
+    virtual IOReturn getInfraChannel(void); // RT?
+    virtual IOReturn getInfraChannel(apple80211_channel_data *); // RT?
+    virtual IOReturn setCountryCode(apple80211_country_code_data *); // RT?
+    virtual IOReturn getCountryCode(apple80211_country_code_data *); // RT?
+    virtual IOReturn setAMPDUstat(apple80211_stat_report *,apple80211_ampdu_stat_report *,apple80211_channel *); // RT?
+    virtual IOReturn setBTCoexstat(apple80211_stat_report *,apple80211_btCoex_report *); // RT?
+    virtual IOReturn setLTECoexstat(apple80211_stat_report *,apple80211_lteCoex_report *); // RT?
+    virtual IOReturn setChanExtendedCCA(apple80211_stat_report *,apple80211_cca_report *); // RT?
+    virtual IOReturn setChanCCA(apple80211_stat_report *,int); // RT?
+    virtual IOReturn setInterfaceRSSI(int); // RT?
+    virtual IOReturn getInterfaceMonitor(void); // RT?
     virtual void setInterfaceNF(int);
-    virtual IOReturn /*RT?*/ setInterfaceSNR(int);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateAwdlRadioDutyCyclePct(unsigned short);  // TODO: return type
-    virtual IOReturn /*RT?*/ getAwdlRadioDutyCyclePct(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logTxLatency(unsigned long long,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ incrementTxLatency(apple80211_latency *,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getTxLatencyClearOnRead(apple80211_latency_all_ac &);  // TODO: return type
-    virtual IOReturn /*RT?*/ incrementRxLatency(apple80211_latency *,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ logRxLatency(unsigned long long,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getRxLatencyClearOnRead(apple80211_latency_all_ac &);  // TODO: return type
-    virtual IOReturn /*RT?*/ setChanNoiseFloor(apple80211_stat_report *,int);  // TODO: return type
-    virtual IOReturn /*RT?*/ setChanNoiseFloorLTE(apple80211_stat_report *,int);  // TODO: return type
+    virtual IOReturn setInterfaceSNR(int); // RT?
+    virtual IOReturn updateAwdlRadioDutyCyclePct(unsigned short); // RT?
+    virtual IOReturn getAwdlRadioDutyCyclePct(void); // RT?
+    virtual IOReturn logTxLatency(unsigned long long,unsigned int); // RT?
+    virtual IOReturn incrementTxLatency(apple80211_latency *,unsigned int); // RT?
+    virtual IOReturn getTxLatencyClearOnRead(apple80211_latency_all_ac &); // RT?
+    virtual IOReturn incrementRxLatency(apple80211_latency *,unsigned int); // RT?
+    virtual IOReturn logRxLatency(unsigned long long,unsigned int); // RT?
+    virtual IOReturn getRxLatencyClearOnRead(apple80211_latency_all_ac &); // RT?
+    virtual IOReturn setChanNoiseFloor(apple80211_stat_report *,int); // RT?
+    virtual IOReturn setChanNoiseFloorLTE(apple80211_stat_report *,int); // RT?
     virtual bool createWorkQueue(void);
-    virtual IOReturn /*RT?*/ getWorkQueue(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getIO80211CommandGate(void);  // TODO: return type
-    virtual IO80211SkywalkInterface* getPrimarySkywalkInterface(void);
+    virtual IOReturn getWorkQueue(void); // RT?
+    virtual IOReturn getIO80211CommandGate(void); // RT?
+    virtual IO80211SkywalkInterface getPrimarySkywalkInterface(void);
     virtual IOReturn getHardwareAddress(IOEthernetAddress *);
-    virtual IOReturn /*RT?*/ acquireMaxBuffer(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ releaseMaxBuffer(IO80211CagedBuffer *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMaxBufferLock(void);  // TODO: return type
-    virtual const char* stringFromReturn(int);
+    virtual IOReturn acquireMaxBuffer(void); // RT?
+    virtual IOReturn releaseMaxBuffer(IO80211CagedBuffer *); // RT?
+    virtual IOReturn getMaxBufferLock(void); // RT?
+    virtual const char stringFromReturn(int);
     virtual int errnoFromReturn(int);
-    virtual IOReturn /*RT?*/ getASSOCIATE_RESULT(IO80211SkywalkInterface *,apple80211_assoc_result_data *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getASSOCIATE_EXTENDED_RESULT(IO80211SkywalkInterface *,apple80211_assoc_result_data *);  // TODO: return type
+    virtual IOReturn getASSOCIATE_RESULT(IO80211SkywalkInterface *,apple80211_assoc_result_data *); // RT?
+    virtual IOReturn getASSOCIATE_EXTENDED_RESULT(IO80211SkywalkInterface *,apple80211_assoc_result_data *); // RT?
     virtual bool attachInterface(OSObject *,IOService *);
     virtual void detachInterface(OSObject *,bool);
     virtual bool attachVirtualInterface(IO80211VirtualInterface * *,ether_addr *,unsigned int,bool);
     virtual bool detachVirtualInterface(IO80211VirtualInterface *,bool);
-    virtual IO80211VirtualInterface* createVirtualInterface(ether_addr *,unsigned int);
+    virtual IO80211VirtualInterface createVirtualInterface(ether_addr *,unsigned int);
     virtual void dataLinkLayerAttachComplete(void);
     virtual void requestPacketTx(void *,unsigned int);
     virtual int bpfOutputPacket(OSObject *,unsigned int,__mbuf *);
-    virtual IOReturn /*RT?*/ copyIn(unsigned long long,void *,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ copyOut(void const *,unsigned long long,unsigned long);  // TODO: return type
-    virtual IOReturn /*RT?*/ getUserspaceP2POptions(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setUserspaceP2POptions(unsigned long long);  // TODO: return type
+    virtual IOReturn copyIn(unsigned long long,void *,unsigned long); // RT?
+    virtual IOReturn copyOut(void const *,unsigned long long,unsigned long); // RT?
+    virtual IOReturn getUserspaceP2POptions(void); // RT?
+    virtual IOReturn setUserspaceP2POptions(unsigned long long); // RT?
     virtual UInt32 getDataQueueDepth(OSObject *);
     virtual SInt32 enableVirtualInterface(IO80211VirtualInterface *);
     virtual SInt32 disableVirtualInterface(IO80211VirtualInterface *);
-    virtual IOReturn /*RT?*/ getPeerStatsID(ether_addr *,unsigned char *);  // TODO: return type
-    virtual IOReturn /*RT?*/ removePeerStatsID(unsigned char);  // TODO: return type
-    virtual IOReturn /*RT?*/ lockIOReporterLegend(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ unlockIOReporterLegend(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ syncReporterLegendWork(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ reporterLegendHasChanges(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getIOReporterLegendCalmTimerValue(unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getSynthesizedIOReportLegendWithGroupSubgroup(apple80211_ior_legend_query *);  // TODO: return type
-    virtual IOReturn /*RT?*/ syncReporterLegendWorkInternal(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ removeReporterFromLegend(IOService *,IOReporter *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ removeReporterFromLegendSync(IOService *,IOReporter *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ verifyContentsOfLegend(OSDictionary *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getCommonFaultReporter(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ verifyNoDuplicateChannelIDsInLegend(OSArray *,OSDictionary *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ verifyNoDuplicateChannelIDs(IOService *,IOReporter *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ addReporterLegend(IOService *,IOReporter *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ verifyContentsOfReportersLegend(IOReporter *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ addReporterLegendSync(IOService *,IOReporter *,char const *,char const *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setIORValidation(bool,bool);  // TODO: return type
+    virtual IOReturn getPeerStatsID(ether_addr *,unsigned char *); // RT?
+    virtual IOReturn removePeerStatsID(unsigned char); // RT?
+    virtual IOReturn lockIOReporterLegend(void); // RT?
+    virtual IOReturn unlockIOReporterLegend(void); // RT?
+    virtual IOReturn syncReporterLegendWork(void); // RT?
+    virtual IOReturn reporterLegendHasChanges(void); // RT?
+    virtual IOReturn getIOReporterLegendCalmTimerValue(unsigned int); // RT?
+    virtual IOReturn getSynthesizedIOReportLegendWithGroupSubgroup(apple80211_ior_legend_query *); // RT?
+    virtual IOReturn syncReporterLegendWorkInternal(void); // RT?
+    virtual IOReturn removeReporterFromLegend(IOService *,IOReporter *,char const *,char const *); // RT?
+    virtual IOReturn removeReporterFromLegendSync(IOService *,IOReporter *,char const *,char const *); // RT?
+    virtual IOReturn verifyContentsOfLegend(OSDictionary *,char const *,char const *); // RT?
+    virtual IOReturn getCommonFaultReporter(void); // RT?
+    virtual IOReturn verifyNoDuplicateChannelIDsInLegend(OSArray *,OSDictionary *,char const *,char const *); // RT?
+    virtual IOReturn verifyNoDuplicateChannelIDs(IOService *,IOReporter *,char const *,char const *); // RT?
+    virtual IOReturn addReporterLegend(IOService *,IOReporter *,char const *,char const *); // RT?
+    virtual IOReturn verifyContentsOfReportersLegend(IOReporter *,char const *,char const *); // RT?
+    virtual IOReturn addReporterLegendSync(IOService *,IOReporter *,char const *,char const *); // RT?
+    virtual IOReturn setIORValidation(bool,bool); // RT?
     virtual IOReturn configureReport(IOReportChannelList *,unsigned int,void *,void *);
-    virtual IOReturn /*RT?*/ getNanDataInterface(void);  // TODO: return type
+    virtual IOReturn getNanDataInterface(void); // RT?
     virtual IOReturn updateReport(IOReportChannelList *,unsigned int,void *,void *);
-    virtual IOReturn /*RT?*/ getPrimaryInterfaceScanManager(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInfraInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ resetIO80211ReporterHistory(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setDisplayState(bool);  // TODO: return type
+    virtual IOReturn getPrimaryInterfaceScanManager(void); // RT?
+    virtual IOReturn getInfraInterface(void); // RT?
+    virtual IOReturn resetIO80211ReporterHistory(void); // RT?
+    virtual IOReturn setDisplayState(bool); // RT?
     virtual UInt32 getFeatures(void);
-    virtual const OSString * newVendorString(void);
-    virtual const OSString * newModelString(void);
+    virtual const OSString newVendorString(void);
+    virtual const OSString newModelString(void);
     virtual bool createWorkLoop(void);
-    virtual IOWorkLoop* getWorkLoop(void);
+    virtual IOWorkLoop getWorkLoop(void);
     virtual SInt32 monitorModeSetEnabled(bool,unsigned int);
     virtual UInt32 hardwareOutputQueueDepth(void);
     virtual SInt32 performCountryCodeOperation(IO80211CountryCodeOp);
     virtual SInt32 enableFeature(IO80211FeatureCode,void *);
-    virtual IOReturn /*RT?*/ setSleeping(bool);  // TODO: return type
+    virtual IOReturn setSleeping(bool); // RT?
     virtual bool requiresExplicitMBufRelease(void);
-    virtual IOReturn /*RT?*/ getSaplInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getNanMgmtInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setNanInterface(IO80211VirtualInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setNanMgmtInterface(IO80211VirtualInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setNanDataInterface(IO80211VirtualInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLLWInterface(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setAwdlInterface(IO80211VirtualInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ setSapInterface(IO80211VirtualInterface *);  // TODO: return type
+    virtual IOReturn getSaplInterface(void); // RT?
+    virtual IOReturn getNanMgmtInterface(void); // RT?
+    virtual IOReturn setNanInterface(IO80211VirtualInterface *); // RT?
+    virtual IOReturn setNanMgmtInterface(IO80211VirtualInterface *); // RT?
+    virtual IOReturn setNanDataInterface(IO80211VirtualInterface *); // RT?
+    virtual IOReturn getLLWInterface(void); // RT?
+    virtual IOReturn setAwdlInterface(IO80211VirtualInterface *); // RT?
+    virtual IOReturn setSapInterface(IO80211VirtualInterface *); // RT?
     virtual bool flowIdSupported(void);
     virtual void getLogPipes(CCPipe * *,CCPipe * *,CCPipe * *);
     virtual void enableFeatureForLoggingFlags(unsigned long long);
@@ -705,44 +734,44 @@ public:
     virtual IOReturn enablePacketTimestamping(void);
     virtual IOReturn disablePacketTimestamping(void);
     virtual UInt getPacketTSCounter(void);
-    virtual IOReturn /*RT?*/ getEventCCStream(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getControllerMonitor(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getRangingManager(void);  // TODO: return type
+    virtual IOReturn getEventCCStream(void); // RT?
+    virtual IOReturn getControllerMonitor(void); // RT?
+    virtual IOReturn getRangingManager(void); // RT?
     virtual bool wasDynSARInFailSafeMode(void);
-    virtual IOReturn /*RT?*/ isIOCTLLogicDisabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isIOUCPreferred(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ shouldPanicOnIOCTL(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isEventSocketDisabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getLqmCrashTracerFeatureFlagEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setLqmCrashTracerFeatureFlagEnabled(unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getP2PForULLRTInfraFeatureFlagEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setP2PForULLRTInfraFeatureFlagEnabled(bool);  // TODO: return type
+    virtual IOReturn isIOCTLLogicDisabled(void); // RT?
+    virtual IOReturn isIOUCPreferred(void); // RT?
+    virtual IOReturn shouldPanicOnIOCTL(void); // RT?
+    virtual IOReturn isEventSocketDisabled(void); // RT?
+    virtual IOReturn getLqmCrashTracerFeatureFlagEnabled(void); // RT?
+    virtual IOReturn setLqmCrashTracerFeatureFlagEnabled(unsigned int); // RT?
+    virtual IOReturn getP2PForULLRTInfraFeatureFlagEnabled(void); // RT?
+    virtual IOReturn setP2PForULLRTInfraFeatureFlagEnabled(bool); // RT?
     virtual void postMessage(IO80211SkywalkInterface *,unsigned int,void *,unsigned long,bool);
-    virtual IOReturn /*RT?*/ postMessageSync(IO80211SkywalkInterface *,unsigned int,void *,unsigned long,bool);  // TODO: return type
+    virtual IOReturn postMessageSync(IO80211SkywalkInterface *,unsigned int,void *,unsigned long,bool); // RT?
     virtual IOReturn setPromiscuousMode(bool);
     virtual IOReturn setMulticastMode(bool);
     virtual IOReturn setMulticastList(ether_addr const *,unsigned int);
-    virtual IOReturn /*RT?*/ onDispatchQueue(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isLQMOSLOGEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isLQMIOLOGEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ isLQMCCLOGEnabled(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ logLQMToCC(char const *,...);  // TODO: return type
-    virtual IOReturn /*RT?*/ getRNGAgent(void);  // TODO: return type
+    virtual IOReturn onDispatchQueue(void); // RT?
+    virtual IOReturn isLQMOSLOGEnabled(void); // RT?
+    virtual IOReturn isLQMIOLOGEnabled(void); // RT?
+    virtual IOReturn isLQMCCLOGEnabled(void); // RT?
+    virtual IOReturn logLQMToCC(char const *,...); // RT?
+    virtual IOReturn getRNGAgent(void); // RT?
     virtual void updateAdvisoryScoresIfNeed(void);
     virtual UInt64 getAVCAdvisoryInfo(IO80211InterfaceAVCAdvisory *);
-    virtual IOReturn /*RT?*/ CreatePostOffice(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPostOffice(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getPLATFORM_CONFIG(IO80211SkywalkInterface *,apple80211_platform_config *);  // TODO: return type
-    virtual IOReturn /*RT?*/ getActionFramePoolCapacity(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getMgmtFramePool(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ loadCardCapabilities(IO80211SkywalkInterface *);  // TODO: return type
-    virtual IOReturn /*RT?*/ isCardCapabilitiesSet(apple80211_card_capability);  // TODO: return type
-    virtual IOReturn /*RT?*/ getOSFeatureFlags(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ setOSFeatureFlags(apple80211_feature_flags *);  // TODO: return type
-    virtual IOReturn /*RT?*/ updateWoWReasonToIoReg(unsigned int,char *,unsigned long,unsigned int);  // TODO: return type
-    virtual IOReturn /*RT?*/ getInterfaceActiveBitmap(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ getGlobalLogger(void);  // TODO: return type
-    virtual IOReturn /*RT?*/ allocIO80211RecursiveLock(void);  // TODO: return type
+    virtual IOReturn CreatePostOffice(void); // RT?
+    virtual IOReturn getPostOffice(void); // RT?
+    virtual IOReturn getPLATFORM_CONFIG(IO80211SkywalkInterface *,apple80211_platform_config *); // RT?
+    virtual IOReturn getActionFramePoolCapacity(void); // RT?
+    virtual IOReturn getMgmtFramePool(void); // RT?
+    virtual IOReturn loadCardCapabilities(IO80211SkywalkInterface *); // RT?
+    virtual IOReturn isCardCapabilitiesSet(apple80211_card_capability); // RT?
+    virtual IOReturn getOSFeatureFlags(void); // RT?
+    virtual IOReturn setOSFeatureFlags(apple80211_feature_flags *); // RT?
+    virtual IOReturn updateWoWReasonToIoReg(unsigned int,char *,unsigned long,unsigned int); // RT?
+    virtual IOReturn getInterfaceActiveBitmap(void); // RT?
+    virtual IOReturn getGlobalLogger(void); // RT?
+    virtual IOReturn allocIO80211RecursiveLock(void); // RT?
 };
 
 #endif
