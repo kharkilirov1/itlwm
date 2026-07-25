@@ -35,7 +35,7 @@ IOService * AirportSequoia::probe(IOService *provider, SInt32 *score) {
 bool AirportSequoia::start(IOService *provider) {
     DRVLOG("start");
     if (!super::start(provider)) {
-        DRVERR("super::start failed");
+        DRVERR("IO80211Controller::start failed");
         return false;
     }
 
