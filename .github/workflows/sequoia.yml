@@ -17,6 +17,12 @@ jobs:
       - name: Fetch MacKernelSDK
         run: git clone --depth=1 https://github.com/acidanthera/MacKernelSDK.git
 
+      - name: Generate firmware blob
+        run: |
+          export PROJECT_DIR="$PWD"
+          sh scripts/fw_gen.sh -P "$PWD/itlwm/firmware/"
+          ls -la include/FwBinary.cpp
+
       - name: Generate Xcode project
         run: |
           xcodegen -s project_sequoia.yml
