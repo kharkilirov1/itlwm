@@ -5,7 +5,7 @@ targets:
   AirportSequoia:
     type: bundle
     platform: macOS
-    deploymentTarget: "15.0"
+    deploymentTarget: "10.15"
     sources:
       - path: AirportSequoia
     settings:

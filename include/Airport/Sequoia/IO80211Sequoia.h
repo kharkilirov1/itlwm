@@ -7,9 +7,11 @@
 #include <net/if.h>
 #include <net/if_var.h>
 #include <net/ethernet.h>
+#include <sys/mbuf.h>
+#include <Airport/apple80211_var.h>
+#include <Airport/apple_private_spi.h>
 #include <Airport/IOSkywalkEthernetInterface.h>
 
-typedef int SkywalkInterfaceRole; // TODO: точный enum из IOSkywalkFamily
 class CCLogStream;
 class CCPipe;
 class CreatePostOffice;
@@ -33,15 +35,12 @@ class IO80211Peer;
 class IO80211PeerManager;
 class IO80211TimerSource;
 class IOMediumType;
-class IOReportChannelList;
 class IOReporter;
 class IOSkywalkPacketBufferPool;
 class IOSkywalkPacketQueue;
 class OSSymbol;
 class PacketSkywalkScratch;
 class RegistrationInfo;
-class SInt64;
-class SkywalkInterfaceRole;
 class TxCompletionEnqueueStats;
 class TxPacketRequest;
 class TxSubmissionDequeueStats;
@@ -93,17 +92,17 @@ public:
     virtual void handleDebugCmd(apple80211_debug_command *);
     virtual void printDataPath(userPrintCtx *);
     virtual UInt32 getDataQueueDepth(void);
-    virtual const char stringFromReturn(int);
+    virtual const char * stringFromReturn(int);
     virtual IOReturn getControllerWorkQueue(void); // RT?
     virtual IOReturn getWorkQueue(void); // RT?
     virtual IOReturn getPeerMonitor(IO80211Peer *); // RT?
     virtual IOReturn getLinkQualityMonitor(IO80211Peer *); // RT?
     virtual IOReturn getLinkRecovery(IO80211Peer *); // RT?
     virtual IOReturn getLqmCrashTracer(IO80211Peer *); // RT?
-    virtual IOReturn getHardwareAddress(ether_addr *);
+    virtual void getHardwareAddress(ether_addr *);
     virtual IOReturn getSelfMacAddr(void); // RT?
     virtual IOReturn setInitMacAddress(ether_addr &); // RT?
-    virtual IOReturn setHardwareAddress(ether_addr *);
+    virtual void setHardwareAddress(ether_addr *);
     virtual IOReturn setSET_MAC_ADDRESS(apple80211_set_mac_address *);
     virtual IOReturn updateTimeSyncMacAddress(ether_addr &); // RT?
     virtual IOMediumType getMediumType(void);
@@ -124,7 +123,7 @@ public:
     virtual IOReturn postMessageSync(unsigned int,void *,unsigned long); // RT?
     virtual IOReturn reportDataPathEventsGated(void *,void *,void *,void *,void *); // RT?
     virtual IOReturn reportDataPathEvents(unsigned int,void *,unsigned long,bool);
-    virtual IOReturn getSupportedMediaArray(unsigned int *,unsigned int *); // RT?
+    virtual void * getSupportedMediaArray(unsigned int *,unsigned int *); // RT?
     virtual IOReturn handleChosenMedia(unsigned int);
     virtual IOReturn setPromiscuousModeEnable(bool,unsigned int);
     virtual IOReturn recordInputPacket(int,int); // RT?
@@ -424,7 +423,7 @@ public:
     virtual IOReturn setJoiningState(unsigned int,joinStatus,bool); // RT?
     virtual IOReturn isAwdlAssistedDiscoveryEnabled(void); // RT?
     virtual IOReturn notifyHostapState(apple80211_hostap_state *); // RT?
-    virtual const char stringFromReturn(int);
+    virtual const char * stringFromReturn(int);
     virtual UInt32 configureAQMOutput(void);
     virtual void free(void);
     virtual bool terminate(unsigned int);
@@ -659,11 +658,11 @@ public:
     virtual IOReturn getWorkQueue(void); // RT?
     virtual IOReturn getIO80211CommandGate(void); // RT?
     virtual IO80211SkywalkInterface getPrimarySkywalkInterface(void);
-    virtual IOReturn getHardwareAddress(IOEthernetAddress *);
+    virtual void getHardwareAddress(IOEthernetAddress *);
     virtual IOReturn acquireMaxBuffer(void); // RT?
     virtual IOReturn releaseMaxBuffer(IO80211CagedBuffer *); // RT?
     virtual IOReturn getMaxBufferLock(void); // RT?
-    virtual const char stringFromReturn(int);
+    virtual const char * stringFromReturn(int);
     virtual int errnoFromReturn(int);
     virtual IOReturn getASSOCIATE_RESULT(IO80211SkywalkInterface *,apple80211_assoc_result_data *); // RT?
     virtual IOReturn getASSOCIATE_EXTENDED_RESULT(IO80211SkywalkInterface *,apple80211_assoc_result_data *); // RT?
