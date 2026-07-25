@@ -8,8 +8,8 @@ targets:
     deploymentTarget: "15.0"
     sources:
       - path: AirportSequoia
-      - path: include
     settings:
+      SDKROOT: "$(SRCROOT)/MacKernelSDK"
       PRODUCT_BUNDLE_IDENTIFIER: com.openintelwireless.AirportSequoia
       WRAPPER_EXTENSION: kext
       GENERATE_INFOPLIST_FILE: NO
