@@ -3,8 +3,8 @@
 // Цепочки: IO80211Controller : IOEthernetController
 //          IO80211InfraInterface/IO80211VirtualInterface : IO80211SkywalkInterface
 //            : IOSkywalkEthernetInterface : IOSkywalkNetworkInterface : IOSkywalkInterface : IOService
-#ifndef IO80211_SEQUOIA_H
-#define IO80211_SEQUOIA_H
+#ifndef IO80211_SEQUOIA_SKYWALK_H
+#define IO80211_SEQUOIA_SKYWALK_H
 
 #include <IOKit/IOService.h>
 #include <IOKit/network/IOEthernetController.h>
@@ -234,4 +234,4 @@ public:
     void postMessageIOUC(char const *,unsigned int,void *,unsigned long);
 };
 
-#endif /* IO80211_SEQUOIA_H */
+#endif /* IO80211_SEQUOIA_SKYWALK_H */
