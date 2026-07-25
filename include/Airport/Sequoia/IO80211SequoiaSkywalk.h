@@ -33,6 +33,7 @@ class TxSubmissionDequeueStats;
 typedef int apple80211_wme_ac;
 struct nicproxy_info_s;
 struct nicproxy_limits_info_s;
+struct if_link_status;
 typedef int SkywalkInterfaceRole;
 struct userPrintCtx;
 struct apple80211_stat_report;
