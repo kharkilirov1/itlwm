@@ -109,7 +109,6 @@ struct apple80211_power_debug_sub_info;
 struct apple80211_ssid_transition_feature_enabled;
 struct apple80211_wcl_advisory_info;
 struct apple80211_wcl_tx_rx_latency;
-struct joinStatus;
 struct ifmediareq;
 
 class IO80211SkywalkInterface : public IOSkywalkEthernetInterface {
@@ -781,7 +780,7 @@ public:
     virtual const OSString newVendorString(void);
     virtual const OSString newModelString(void);
     virtual bool createWorkLoop(void);
-    virtual IOWorkLoop getWorkLoop(void);
+    virtual IOWorkLoop * getWorkLoop(void);
     virtual SInt32 monitorModeSetEnabled(bool,unsigned int);
     virtual UInt32 hardwareOutputQueueDepth(void);
     virtual SInt32 performCountryCodeOperation(IO80211CountryCodeOp);
