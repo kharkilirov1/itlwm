@@ -79,7 +79,6 @@ bool ItlIwn::attach(IOPCIDevice *device)
     pci.workloop = getMainWorkLoop();
     if (!iwn_attach(&com, &pci)) {
         detach(device);
-        releaseAll();
         return false;
     }
     return true;
@@ -90,7 +89,31 @@ detach(IOPCIDevice *device)
 {
     struct _ifnet *ifp = &com.sc_ic.ic_ac.ac_if;
     struct iwn_softc *sc = &com;
-    
+
+    if (sc->sc_ih) {
+        IOInterruptEventSource *interrupt = sc->sc_ih;
+        sc->sc_ih = NULL;
+        interrupt->disable();
+        if (pci.workloop)
+            pci.workloop->removeEventSource(interrupt);
+        interrupt->release();
+    }
+
+    if (sc->calib_to)
+        timeout_del(&sc->calib_to);
+    timeout_del(&sc->sc_ic.ic_bgscan_timeout);
+    timeout_del(&ifp->if_slowtimo);
+
+    if (sc->sc_taskq_initialized) {
+        task_del(systq, &sc->init_task);
+        taskq_barrier(systq);
+        taskq_destroy(systq);
+        sc->sc_taskq_initialized = 0;
+    }
+
+    if (ifp->controller)
+        ieee80211_ifdetach(ifp);
+
     for (int txq_i = 0; txq_i < nitems(sc->txq); txq_i++)
         iwn_free_tx_ring(sc, &sc->txq[txq_i]);
     iwn_free_rx_ring(sc, &sc->rxq);
@@ -98,8 +121,13 @@ detach(IOPCIDevice *device)
     iwn_free_ict(sc);
     iwn_free_kw(sc);
     iwn_free_fwmem(sc);
-    ieee80211_ifdetach(ifp);
-    taskq_destroy(systq);
+    for (int i = 0; i < nitems(sc->calibcmd); i++) {
+        if (sc->calibcmd[i].buf)
+            ::free(sc->calibcmd[i].buf);
+        sc->calibcmd[i].buf = NULL;
+        sc->calibcmd[i].len = 0;
+    }
+    ifp->if_softc = NULL;
     releaseAll();
 }
 
@@ -107,15 +135,17 @@ void ItlIwn::
 releaseAll()
 {
     pci_intr_handle *intrHandler = com.ih;
-    
+    com.ih = NULL;
+
     if (com.calib_to) {
         timeout_del(&com.calib_to);
         timeout_free(&com.calib_to);
     }
     if (intrHandler) {
-        if (intrHandler->intr && intrHandler->workloop) {
-//            intrHandler->intr->disable();
-            intrHandler->workloop->removeEventSource(intrHandler->intr);
+        if (intrHandler->intr) {
+            intrHandler->intr->disable();
+            if (intrHandler->workloop)
+                intrHandler->workloop->removeEventSource(intrHandler->intr);
             intrHandler->intr->release();
         }
         intrHandler->intr = NULL;
@@ -124,8 +154,14 @@ releaseAll()
         intrHandler->dev = NULL;
         intrHandler->func = NULL;
         intrHandler->release();
-        com.ih = NULL;
     }
+    if (com.sc_st) {
+        IOMemoryMap *barMap = com.sc_st;
+        com.sc_st = NULL;
+        barMap->release();
+    }
+    com.sc_sh = NULL;
+    com.sc_sz = 0;
     pci.pa_tag = NULL;
     pci.workloop = NULL;
 }
@@ -350,6 +386,7 @@ iwn_attach(struct iwn_softc *sc, struct pci_attach_args *pa)
     pcireg_t memtype, reg;
     int i, error;
 
+    sc->sc_taskq_initialized = 0;
     sc->sc_pct = pa->pa_pc;
     sc->sc_pcitag = pa->pa_tag;
     sc->sc_dmat = pa->pa_dmat;
@@ -414,7 +451,13 @@ iwn_attach(struct iwn_softc *sc, struct pci_attach_args *pa)
     sc->sc_ih = IOFilterInterruptEventSource::filterInterruptEventSource(this,
                                                                          (IOInterruptEventSource::Action)&ItlIwn::iwn_intr, &ItlIwn::intrFilter
                                                                          ,pa->pa_tag, msiIntrIndex);
-    if (sc->sc_ih == NULL || pa->workloop->addEventSource(sc->sc_ih) != kIOReturnSuccess) {
+    if (sc->sc_ih == NULL) {
+        XYLog("%s: can't establish interrupt\n", DEVNAME(sc));
+        return false;
+    }
+    if (pa->workloop->addEventSource(sc->sc_ih) != kIOReturnSuccess) {
+        sc->sc_ih->release();
+        sc->sc_ih = NULL;
         XYLog("%s: can't establish interrupt\n", DEVNAME(sc));
         return false;
     }
@@ -452,34 +495,34 @@ iwn_attach(struct iwn_softc *sc, struct pci_attach_args *pa)
     /* Allocate "Keep Warm" page. */
     if ((error = iwn_alloc_kw(sc)) != 0) {
         XYLog(": could not allocate keep warm page\n");
-        goto fail1;
+        return false;
     }
 
     /* Allocate ICT table for 5000 Series. */
     if (sc->hw_type != IWN_HW_REV_TYPE_4965 &&
         (error = iwn_alloc_ict(sc)) != 0) {
         XYLog(": could not allocate ICT table\n");
-        goto fail2;
+        return false;
     }
 
     /* Allocate TX scheduler "rings". */
     if ((error = iwn_alloc_sched(sc)) != 0) {
         XYLog(": could not allocate TX scheduler rings\n");
-        goto fail3;
+        return false;
     }
 
     /* Allocate TX rings (16 on 4965AGN, 20 on >=5000). */
     for (i = 0; i < sc->ntxqs; i++) {
         if ((error = iwn_alloc_tx_ring(sc, &sc->txq[i], i)) != 0) {
             XYLog(": could not allocate TX ring %d\n", i);
-            goto fail4;
+            return false;
         }
     }
 
     /* Allocate RX ring. */
     if ((error = iwn_alloc_rx_ring(sc, &sc->rxq)) != 0) {
         XYLog(": could not allocate RX ring\n");
-        goto fail4;
+        return false;
     }
 
     /* Clear pending interrupts. */
@@ -497,7 +540,9 @@ iwn_attach(struct iwn_softc *sc, struct pci_attach_args *pa)
     XYLog(", MIMO %dT%dR, %.4s, address %s\n", sc->ntxchains,
         sc->nrxchains, sc->eeprom_domain, ether_sprintf(ic->ic_myaddr));
 
-    taskq_init();
+    if (!taskq_init())
+        return false;
+    sc->sc_taskq_initialized = 1;
     
     ic->ic_phytype = IEEE80211_T_OFDM;    /* not only, but not used */
     ic->ic_opmode = IEEE80211_M_STA;    /* default to BSS mode */
@@ -613,16 +658,6 @@ iwn_attach(struct iwn_softc *sc, struct pci_attach_args *pa)
 //    rw_init(&sc->sc_rwlock, "iwnlock");
     task_set(&sc->init_task, iwn_init_task, sc, "iwn_init_task");
     return true;
-
-    /* Free allocated memory if something failed during attachment. */
-fail4:    while (--i >= 0)
-        iwn_free_tx_ring(sc, &sc->txq[i]);
-    iwn_free_sched(sc);
-fail3:    if (sc->ict != NULL)
-        iwn_free_ict(sc);
-fail2:    iwn_free_kw(sc);
-fail1:    iwn_free_fwmem(sc);
-    return false;
 }
 
 int ItlIwn::

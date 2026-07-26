@@ -693,6 +693,8 @@ struct iwx_softc {
 	int sc_cap_off; /* PCIe caps */
 
 	const char *sc_fwname;
+    bool sc_preinit_done;
+    bool sc_taskq_initialized;
 	struct iwx_fw_info sc_fw;
 	struct iwx_dma_info fw_mon;
 	int sc_fw_phy_config;

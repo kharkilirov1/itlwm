@@ -145,7 +145,6 @@ bool ItlIwx::attach(IOPCIDevice *device)
     pci.workloop = getMainWorkLoop();
     if (!iwx_attach(&com, &pci)) {
         detach(device);
-        releaseAll();
         return false;
     }
     return true;
@@ -156,15 +155,60 @@ detach(IOPCIDevice *device)
 {
     struct _ifnet *ifp = &com.sc_ic.ic_ac.ac_if;
     struct iwx_softc *sc = &com;
-    
+
+    sc->sc_flags |= IWX_FLAG_SHUTDOWN;
+    if (sc->sc_ih) {
+        IOInterruptEventSource *interrupt = sc->sc_ih;
+        sc->sc_ih = NULL;
+        interrupt->disable();
+        if (pci.workloop)
+            pci.workloop->removeEventSource(interrupt);
+        interrupt->release();
+    }
+
+    timeout_del(&sc->sc_ic.ic_bgscan_timeout);
+    timeout_del(&ifp->if_slowtimo);
+
+    if (sc->sc_nswq) {
+        struct taskq *nswq = sc->sc_nswq;
+        sc->sc_nswq = NULL;
+        task_del(nswq, &sc->newstate_task);
+        taskq_barrier(nswq);
+        taskq_destroy(nswq);
+    }
+
+    if (sc->sc_taskq_initialized) {
+        task_del(systq, &sc->init_task);
+        task_del(systq, &sc->ba_task);
+        task_del(systq, &sc->mac_ctxt_task);
+        task_del(systq, &sc->chan_ctxt_task);
+        taskq_barrier(systq);
+        taskq_destroy(systq);
+        sc->sc_taskq_initialized = false;
+    }
+
+    for (int i = 0; i < nitems(sc->sc_rxba_data); i++)
+        iwx_clear_reorder_buffer(sc, &sc->sc_rxba_data[i]);
+    if (ifp->controller)
+        ieee80211_ifdetach(ifp);
+
+    for (int i = 0; i < nitems(sc->sc_cmd_resp_pkt); i++) {
+        if (sc->sc_cmd_resp_pkt[i])
+            ::free(sc->sc_cmd_resp_pkt[i]);
+        sc->sc_cmd_resp_pkt[i] = NULL;
+        sc->sc_cmd_resp_len[i] = 0;
+    }
     for (int txq_i = 0; txq_i < nitems(sc->txq); txq_i++)
         iwx_free_tx_ring(sc, &sc->txq[txq_i]);
     iwx_free_rx_ring(sc, &sc->rxq);
     iwx_dma_contig_free(&sc->ict_dma);
     iwx_dma_contig_free(&com.ctxt_info_dma);
-    ieee80211_ifdetach(ifp);
-    taskq_destroy(systq);
-    taskq_destroy(com.sc_nswq);
+    if (sc->sc_fw.fw_rawdata)
+        iwx_fw_info_free(&sc->sc_fw);
+    iwx_pnvm_free(&sc->sc_fw);
+    sc->sc_preinit_done = false;
+    sc->sc_taskq_initialized = false;
+    ifp->if_softc = NULL;
     releaseAll();
 }
 
@@ -172,11 +216,13 @@ void ItlIwx::
 releaseAll()
 {
     pci_intr_handle *intrHandler = com.ih;
-    
+    com.ih = NULL;
+
     if (intrHandler) {
-        if (intrHandler->intr && intrHandler->workloop) {
-//            intrHandler->intr->disable();
-            intrHandler->workloop->removeEventSource(intrHandler->intr);
+        if (intrHandler->intr) {
+            intrHandler->intr->disable();
+            if (intrHandler->workloop)
+                intrHandler->workloop->removeEventSource(intrHandler->intr);
             intrHandler->intr->release();
         }
         intrHandler->intr = NULL;
@@ -185,8 +231,14 @@ releaseAll()
         intrHandler->dev = NULL;
         intrHandler->func = NULL;
         intrHandler->release();
-        com.ih = NULL;
     }
+    if (com.sc_st) {
+        IOMemoryMap *barMap = com.sc_st;
+        com.sc_st = NULL;
+        barMap->release();
+    }
+    com.sc_sh = NULL;
+    com.sc_sz = 0;
     pci.pa_tag = NULL;
     pci.workloop = NULL;
 }
@@ -12713,15 +12765,14 @@ iwx_preinit(struct iwx_softc *sc)
     struct ieee80211com *ic = &sc->sc_ic;
     struct _ifnet *ifp = IC2IFP(ic);
     int err;
-    static int attached;
     
     err = iwx_prepare_card_hw(sc);
     if (err) {
         XYLog("%s: could not initialize hardware\n", DEVNAME(sc));
         return err;
     }
-    
-    if (attached) {
+
+    if (sc->sc_preinit_done) {
         /* Update MAC in case the upper layers changed it. */
         IEEE80211_ADDR_COPY(sc->sc_ic.ic_myaddr,
                             ((struct arpcom *)ifp)->ac_enaddr);
@@ -12739,8 +12790,7 @@ iwx_preinit(struct iwx_softc *sc)
     if (err)
         return err;
     
-    /* Print version info and MAC address on first successful fw load. */
-    attached = 1;
+    /* Print version info and MAC address after a successful fw load. */
     XYLog("%s: hw rev 0x%x, fw ver %s, address %s\n",
           DEVNAME(sc), sc->sc_hw_rev & IWX_CSR_HW_REV_TYPE_MSK,
           sc->sc_fwver, ether_sprintf(sc->sc_nvm.hw_addr));
@@ -12769,7 +12819,8 @@ iwx_preinit(struct iwx_softc *sc)
                 DEVNAME(sc), err);
     
     ieee80211_media_init(ifp);
-    
+
+    sc->sc_preinit_done = true;
     return 0;
 }
 
@@ -12797,7 +12848,9 @@ iwx_attach(struct iwx_softc *sc, struct pci_attach_args *pa)
     struct _ifnet *ifp = &ic->ic_if;
     int err;
     int txq_i, i, j;
-    
+
+    sc->sc_preinit_done = false;
+    sc->sc_taskq_initialized = false;
     sc->sc_pct = pa->pa_pc;
     sc->sc_pcitag = pa->pa_tag;
     sc->sc_dmat = pa->pa_dmat;
@@ -12878,7 +12931,13 @@ iwx_attach(struct iwx_softc *sc, struct pci_attach_args *pa)
         sc->sc_ih = IOFilterInterruptEventSource::filterInterruptEventSource(this,
                                                                              (IOInterruptEventSource::Action)&ItlIwx::iwx_intr, &ItlIwx::intrFilter
                                                                              ,pa->pa_tag, msiIntrIndex);
-    if (sc->sc_ih == NULL || pa->workloop->addEventSource(sc->sc_ih) != kIOReturnSuccess) {
+    if (sc->sc_ih == NULL) {
+        XYLog("%s: can't establish interrupt\n", DEVNAME(sc));
+        return false;
+    }
+    if (pa->workloop->addEventSource(sc->sc_ih) != kIOReturnSuccess) {
+        sc->sc_ih->release();
+        sc->sc_ih = NULL;
         XYLog("%s: can't establish interrupt\n", DEVNAME(sc));
         return false;
     }
@@ -13014,7 +13073,7 @@ iwx_attach(struct iwx_softc *sc, struct pci_attach_args *pa)
                                IWX_ICT_SIZE, 1<<IWX_ICT_PADDR_SHIFT);
     if (err) {
         XYLog("%s: could not allocate ICT table\n", DEVNAME(sc));
-        goto fail0;
+        return false;
     }
     
     for (txq_i = 0; txq_i < nitems(sc->txq); txq_i++) {
@@ -13022,20 +13081,22 @@ iwx_attach(struct iwx_softc *sc, struct pci_attach_args *pa)
         if (err) {
             XYLog("%s: could not allocate TX ring %d\n",
                   DEVNAME(sc), txq_i);
-            goto fail4;
+            return false;
         }
     }
     
     err = iwx_alloc_rx_ring(sc, &sc->rxq);
     if (err) {
         XYLog("%s: could not allocate RX ring\n", DEVNAME(sc));
-        goto fail4;
+        return false;
     }
     
-    taskq_init();
+    if (!taskq_init())
+        return false;
+    sc->sc_taskq_initialized = true;
     sc->sc_nswq = taskq_create("iwxns", 1, IPL_NET, 0);
     if (sc->sc_nswq == NULL)
-        goto fail4;
+        return false;
     
     ic->ic_phytype = IEEE80211_T_OFDM;    /* not only, but not used */
     ic->ic_opmode = IEEE80211_M_STA;    /* default to BSS mode */
@@ -13129,25 +13190,10 @@ iwx_attach(struct iwx_softc *sc, struct pci_attach_args *pa)
      * firmware from disk. Postpone until mountroot is done.
      */
     //    config_mountroot(self, iwx_attach_hook);
-    if (iwx_preinit(sc)) {
-        goto fail5;
-    }
+    if (iwx_preinit(sc))
+        return false;
     
     return true;
-    
-fail5:
-    for (i = 0; i < nitems(sc->sc_rxba_data); i++) {
-        struct iwx_rxba_data *rxba = &sc->sc_rxba_data[i];
-        iwx_clear_reorder_buffer(sc, rxba);
-    }
-fail4:    while (--txq_i >= 0)
-    iwx_free_tx_ring(sc, &sc->txq[txq_i]);
-    iwx_free_rx_ring(sc, &sc->rxq);
-fail3:    if (sc->ict_dma.vaddr != NULL)
-    iwx_dma_contig_free(&sc->ict_dma);
-
-fail0:    iwx_dma_contig_free(&sc->ctxt_info_dma);
-    return false;
 }
 
 #if NBPFILTER > 0

@@ -22,18 +22,88 @@ detach(IOPCIDevice *device)
 {
     struct _ifnet *ifp = &com.sc_ic.ic_ac.ac_if;
     struct iwm_softc *sc = &com;
-    
+
+    sc->sc_flags |= IWM_FLAG_SHUTDOWN;
+    if (sc->sc_ih) {
+        IOInterruptEventSource *interrupt = sc->sc_ih;
+        sc->sc_ih = NULL;
+        interrupt->disable();
+        if (pci.workloop)
+            pci.workloop->removeEventSource(interrupt);
+        interrupt->release();
+    }
+
+    if (sc->sc_calib_to)
+        timeout_del(&sc->sc_calib_to);
+    if (sc->sc_led_blink_to)
+        timeout_del(&sc->sc_led_blink_to);
+    timeout_del(&sc->sc_ic.ic_bgscan_timeout);
+    timeout_del(&ifp->if_slowtimo);
+
+    if (sc->sc_nswq) {
+        struct taskq *nswq = sc->sc_nswq;
+        sc->sc_nswq = NULL;
+        task_del(nswq, &sc->newstate_task);
+        taskq_barrier(nswq);
+        taskq_destroy(nswq);
+    }
+
+    if (sc->sc_taskq_initialized) {
+        task_del(systq, &sc->init_task);
+        task_del(systq, &sc->ba_task);
+        task_del(systq, &sc->mac_ctxt_task);
+        task_del(systq, &sc->chan_ctxt_task);
+        taskq_barrier(systq);
+        taskq_destroy(systq);
+        sc->sc_taskq_initialized = false;
+    }
+
+    for (int i = 0; i < nitems(sc->sc_rxba_data); i++)
+        iwm_clear_reorder_buffer(sc, &sc->sc_rxba_data[i]);
+    if (ifp->controller)
+        ieee80211_ifdetach(ifp);
+
+    for (int i = 0; i < nitems(sc->sc_cmd_resp_pkt); i++) {
+        if (sc->sc_cmd_resp_pkt[i])
+            ::free(sc->sc_cmd_resp_pkt[i]);
+        sc->sc_cmd_resp_pkt[i] = NULL;
+        sc->sc_cmd_resp_len[i] = 0;
+    }
     for (int txq_i = 0; txq_i < nitems(sc->txq); txq_i++)
         iwm_free_tx_ring(sc, &sc->txq[txq_i]);
     iwm_rs_free(sc);
     iwm_free_rx_ring(sc, &sc->rxq);
+    iwm_free_fw_paging(sc);
     iwm_dma_contig_free(&sc->ict_dma);
     iwm_dma_contig_free(&sc->kw_dma);
     iwm_dma_contig_free(&sc->sched_dma);
     iwm_dma_contig_free(&sc->fw_dma);
-    ieee80211_ifdetach(ifp);
-    taskq_destroy(systq);
-    taskq_destroy(com.sc_nswq);
+
+    struct iwm_phy_db *phyDb = &sc->sc_phy_db;
+    if (phyDb->cfg.data)
+        ::free(phyDb->cfg.data);
+    phyDb->cfg.data = NULL;
+    phyDb->cfg.size = 0;
+    if (phyDb->calib_nch.data)
+        ::free(phyDb->calib_nch.data);
+    phyDb->calib_nch.data = NULL;
+    phyDb->calib_nch.size = 0;
+    for (int i = 0; i < nitems(phyDb->calib_ch_group_papd); i++) {
+        if (phyDb->calib_ch_group_papd[i].data)
+            ::free(phyDb->calib_ch_group_papd[i].data);
+        phyDb->calib_ch_group_papd[i].data = NULL;
+        phyDb->calib_ch_group_papd[i].size = 0;
+    }
+    for (int i = 0; i < nitems(phyDb->calib_ch_group_txp); i++) {
+        if (phyDb->calib_ch_group_txp[i].data)
+            ::free(phyDb->calib_ch_group_txp[i].data);
+        phyDb->calib_ch_group_txp[i].data = NULL;
+        phyDb->calib_ch_group_txp[i].size = 0;
+    }
+    if (sc->sc_fw.fw_rawdata)
+        iwm_fw_info_free(&sc->sc_fw);
+    sc->sc_preinit_done = false;
+    ifp->if_softc = NULL;
     releaseAll();
 }
 
@@ -44,7 +114,6 @@ attach(IOPCIDevice *device)
     pci.workloop = getMainWorkLoop();
     if (!iwm_attach(&com, &pci)) {
         detach(device);
-        releaseAll();
         return false;
     }
     return true;
@@ -62,6 +131,7 @@ releaseAll()
 {
     XYLog("%s\n", __FUNCTION__);
     pci_intr_handle *intrHandler = com.ih;
+    com.ih = NULL;
     if (com.sc_calib_to) {
         timeout_del(&com.sc_calib_to);
         timeout_free(&com.sc_calib_to);
@@ -71,9 +141,10 @@ releaseAll()
         timeout_free(&com.sc_led_blink_to);
     }
     if (intrHandler) {
-        if (intrHandler->intr && intrHandler->workloop) {
-//            intrHandler->intr->disable();
-            intrHandler->workloop->removeEventSource(intrHandler->intr);
+        if (intrHandler->intr) {
+            intrHandler->intr->disable();
+            if (intrHandler->workloop)
+                intrHandler->workloop->removeEventSource(intrHandler->intr);
             intrHandler->intr->release();
         }
         intrHandler->intr = NULL;
@@ -82,8 +153,14 @@ releaseAll()
         intrHandler->dev = NULL;
         intrHandler->func = NULL;
         intrHandler->release();
-        com.ih = NULL;
     }
+    if (com.sc_st) {
+        IOMemoryMap *barMap = com.sc_st;
+        com.sc_st = NULL;
+        barMap->release();
+    }
+    com.sc_sh = NULL;
+    com.sc_sz = 0;
     pci.pa_tag = NULL;
     pci.workloop = NULL;
 }

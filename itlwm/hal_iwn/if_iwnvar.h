@@ -291,6 +291,7 @@ struct iwn_softc {
     struct iwn_calib_state    calib;
 
     struct task        init_task;
+    int                sc_taskq_initialized;
 
     struct iwn_fw_info    fw;
     struct iwn_calib_info    calibcmd[5];

@@ -48,24 +48,26 @@ public:
     
     virtual ItlDriverController *getDriverController() = 0;
     
+    bool init() override;
     virtual void free() override;
 
 public:
     virtual bool initWithController(IOEthernetController *controller, IOWorkLoop *workloop, IOCommandGate *commandGate);
-    
-protected:
-    
-    int tsleep_nsec(void *ident, int priority, const char *wmesg, int timo);
-    
-    void wakeupOn(void* ident);
-    
+    void deinitWithController();
+
     IOEthernetController *getController();
-    
     IOCommandGate *getMainCommandGate();
-    
     IOWorkLoop *getMainWorkLoop();
-    
+
+protected:
+
+    int tsleep_nsec(void *ident, int priority, const char *wmesg, int timo);
+
+    void wakeupOn(void* ident);
+
 private:
+    // Borrowed for the active controller lifetime. The owner must stop all HAL
+    // activity before destroying these objects.
     IOEthernetController *controller;
     IOCommandGate *mainCommandGate;
     IOWorkLoop *mainWorkLoop;

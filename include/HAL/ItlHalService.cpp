@@ -17,20 +17,67 @@
 #define super OSObject
 OSDefineMetaClassAndAbstractStructors(ItlHalService, OSObject)
 
+bool ItlHalService::init()
+{
+    controller = NULL;
+    mainCommandGate = NULL;
+    mainWorkLoop = NULL;
+    inner_gp = NULL;
+    inner_gp_attr = NULL;
+    inner_attr = NULL;
+    inner_lock = NULL;
+    return super::init();
+}
+
 bool ItlHalService::
 initWithController(IOEthernetController *controller, IOWorkLoop *workloop, IOCommandGate *commandGate)
 {
+    if (!controller || !workloop || !commandGate || this->controller ||
+        this->mainWorkLoop || this->mainCommandGate)
+        return false;
+
     this->controller = controller;
-    this->controller->retain();
     this->mainWorkLoop = workloop;
-    this->mainWorkLoop->retain();
     this->mainCommandGate = commandGate;
-    this->mainCommandGate->retain();
     this->inner_attr = lck_attr_alloc_init();
-    this->inner_gp_attr = lck_grp_attr_alloc_init();
-    this->inner_gp = lck_grp_alloc_init("itlwm_tsleep", this->inner_gp_attr);
-    this->inner_lock = lck_mtx_alloc_init(this->inner_gp, this->inner_attr);
+    this->inner_gp_attr = NULL;
+    this->inner_gp = NULL;
+    this->inner_lock = NULL;
+    if (this->inner_attr)
+        this->inner_gp_attr = lck_grp_attr_alloc_init();
+    if (this->inner_gp_attr)
+        this->inner_gp = lck_grp_alloc_init("itlwm_tsleep", this->inner_gp_attr);
+    if (this->inner_gp)
+        this->inner_lock = lck_mtx_alloc_init(this->inner_gp, this->inner_attr);
+    if (!this->inner_attr || !this->inner_gp_attr || !this->inner_gp ||
+        !this->inner_lock) {
+        deinitWithController();
+        return false;
+    }
     return true;
+}
+
+void ItlHalService::
+deinitWithController()
+{
+    if (this->inner_lock)
+        lck_mtx_free(this->inner_lock, this->inner_gp);
+    if (this->inner_gp)
+        lck_grp_free(this->inner_gp);
+    if (this->inner_gp_attr)
+        lck_grp_attr_free(this->inner_gp_attr);
+    if (this->inner_attr)
+        lck_attr_free(this->inner_attr);
+    this->inner_lock = NULL;
+    this->inner_gp = NULL;
+    this->inner_gp_attr = NULL;
+    this->inner_attr = NULL;
+
+    // These references are borrowed from the active controller. Clearing them
+    // makes a failed start retryable without retaining a stopped controller.
+    this->mainCommandGate = NULL;
+    this->mainWorkLoop = NULL;
+    this->controller = NULL;
 }
 
 IOEthernetController *ItlHalService::
@@ -76,24 +123,6 @@ void ItlHalService::
 free()
 {
     XYLog("%s\n", __PRETTY_FUNCTION__);
-    if (this->mainWorkLoop) {
-        this->mainWorkLoop->release();
-    }
-    this->mainWorkLoop = NULL;
-    if (this->mainCommandGate) {
-        this->mainCommandGate->release();
-    }
-    this->mainCommandGate = NULL;
-    if (this->controller) {
-        this->controller->release();
-    }
-    if (this->inner_lock) {
-        lck_attr_free(this->inner_attr);
-        lck_mtx_free(this->inner_lock, this->inner_gp);
-        lck_grp_free(this->inner_gp);
-        lck_grp_attr_free(this->inner_gp_attr);
-        this->inner_lock = NULL;
-    }
-    this->controller = NULL;
+    deinitWithController();
     super::free();
 }

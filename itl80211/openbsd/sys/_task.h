@@ -48,7 +48,7 @@ TAILQ_HEAD(task_list, task);
 
 extern struct taskq *const systq;
 
-void taskq_init();
+int          taskq_init(void);
 struct taskq    *taskq_create(const char *, unsigned int, int, unsigned int);
 void         taskq_destroy(struct taskq *);
 void         taskq_barrier(struct taskq *);

@@ -18,6 +18,7 @@ targets:
       - path: itl80211
         excludes:
           - "Info.plist"
+      - path: include/HAL/ItlHalService.cpp
       - path: include/FwBinary.cpp
         optional: true
     settings:
@@ -35,7 +36,7 @@ targets:
       HEADER_SEARCH_PATHS:
         - "$(SRCROOT)/include"
         - "$(SRCROOT)/MacKernelSDK/Headers"
-      SYSTEM_HEADER_SEARCH_PATHS: "itl80211/openbsd itl80211 include"
+      SYSTEM_HEADER_SEARCH_PATHS: "itl80211/openbsd itl80211"
       LIBRARY_SEARCH_PATHS:
         - "$(SRCROOT)/MacKernelSDK/Library/x86_64"
       OTHER_LDFLAGS:
@@ -45,7 +46,7 @@ targets:
         - "-lkmod"
       GCC_ENABLE_CPP_EXCEPTIONS: NO
       GCC_ENABLE_CPP_RTTI: NO
-      GCC_PREPROCESSOR_DEFINITIONS: "KERNEL=1 AIRPORT __PRIVATE_SPI__ IO80211FAMILY_V2 __IO80211_TARGET=__MAC_13_0 $(inherited)"
+      GCC_PREPROCESSOR_DEFINITIONS: "KERNEL=1 AIRPORT __PRIVATE_SPI__ IO80211FAMILY_V2 USE_APPLE_SUPPLICANT ITLWM_SEQUOIA_ABI=1 __IO80211_TARGET=__MAC_13_0 $(inherited)"
       OTHER_CFLAGS: "-mkernel"
       OTHER_CPLUSPLUSFLAGS: "-mkernel -Wno-deprecated-register"
       CLANG_CXX_LANGUAGE_STANDARD: gnu++14

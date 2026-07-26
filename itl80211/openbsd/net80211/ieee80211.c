@@ -275,10 +275,7 @@ ieee80211_ifdetach(struct _ifnet *ifp)
     ieee80211_node_detach(ifp);
     ifmedia_delete_instance(&ic->ic_media, IFM_INST_ANY);
     ifq_destroy(&ifp->if_snd);
-    if (ifp->if_slowtimo) {
-        ifp->if_slowtimo->release();
-        ifp->if_slowtimo = NULL;
-    }
+    timeout_free(&ifp->if_slowtimo);
     if (ifp->if_sadl) {
         ::free(ifp->if_sadl);
         ifp->if_sadl = NULL;

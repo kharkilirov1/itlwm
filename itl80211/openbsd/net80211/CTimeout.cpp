@@ -49,12 +49,19 @@ IOReturn CTimeout::timeout_add_msec(OSObject *target, void *arg0, void *arg1, vo
     }
     CTimeout *cto = *ccto;
     if (cto->tm == NULL) {
-        cto->tm = IOTimerEventSource::timerEventSource(cto, &CTimeout::timeoutOccurred);
-        if (cto->tm == NULL) {
+        IOTimerEventSource *timer =
+            IOTimerEventSource::timerEventSource(cto,
+                                                  &CTimeout::timeoutOccurred);
+        if (timer == NULL) {
             return kIOReturnError;
         }
-        cto->tm->enable();
-        wl->addEventSource(cto->tm);
+        IOReturn result = wl->addEventSource(timer);
+        if (result != kIOReturnSuccess) {
+            timer->release();
+            return result;
+        }
+        cto->tm = timer;
+        timer->enable();
     }
     cto->tm->setTimeoutMS(msecs);
     cto->isPending = true;
@@ -104,7 +111,12 @@ IOReturn CTimeout::timeout_set(OSObject *target, void *arg0, void *arg1, void *a
         return kIOReturnError;
     }
     if ((*cto) == NULL) {
-        *cto = new CTimeout;
+        CTimeout *newTimeout = new CTimeout;
+        if (newTimeout == NULL || !newTimeout->init()) {
+            OSSafeReleaseNULL(newTimeout);
+            return kIOReturnNoMemory;
+        }
+        *cto = newTimeout;
     }
     tm = *cto;
     tm->isPending = false;

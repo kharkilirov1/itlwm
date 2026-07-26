@@ -614,6 +614,8 @@ struct iwm_softc {
 	int sc_cap_off; /* PCIe caps */
 
 	const char *sc_fwname;
+    bool sc_preinit_done;
+    bool sc_taskq_initialized;
     bus_size_t sc_fwdmasegsz;
     size_t sc_nvm_max_section_size;
     struct iwm_fw_info sc_fw;

@@ -30,11 +30,38 @@ jobs:
           # и тянет -stdlib=libc++, чего в kext нет. Патчим тип продукта как у itlwm.
           sed -i '' 's/com\.apple\.product-type\.bundle/com.apple.product-type.kernel-extension/' AirportSequoia.xcodeproj/project.pbxproj
 
-      - name: Build kext
-        run: xcodebuild -project AirportSequoia.xcodeproj -scheme AirportSequoia -configuration Debug -derivedDataPath build
+      - name: Build kext and capture vtable layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/sequoia-abi-witness
+          xcodebuild \
+            -project AirportSequoia.xcodeproj \
+            -scheme AirportSequoia \
+            -configuration Debug \
+            -derivedDataPath build \
+            OTHER_CPLUSPLUSFLAGS='$(inherited) -Xclang -fdump-vtable-layouts' \
+            2>&1 | tee build/sequoia-abi-witness/xcodebuild-vtables.log
 
-      - name: Upload kext
+      - name: Verify Sequoia ABI skeleton
+        run: |
+          python3 scripts/verify_sequoia_abi.py vtables \
+            --log build/sequoia-abi-witness/xcodebuild-vtables.log
+          python3 scripts/verify_sequoia_abi.py binary \
+            --kext build/Build/Products/Debug/AirportSequoia.kext
+
+      - name: Upload ABI skeleton
         uses: actions/upload-artifact@v4
         with:
-          name: AirportSequoia.kext
-          path: build/Build/Products/Debug/AirportSequoia.kext
+          name: AirportSequoia-ABI-skeleton-WCL-bridge-unverified
+          path: |
+            build/Build/Products/Debug/AirportSequoia.kext
+            build/sequoia-abi-witness
+
+      - name: Upload ABI gate witness on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AirportSequoia-ABI-gate-failure-witness
+          path: build/sequoia-abi-witness
+          if-no-files-found: ignore

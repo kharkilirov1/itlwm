@@ -4368,15 +4368,14 @@ iwm_preinit(struct iwm_softc *sc)
     struct ieee80211com *ic = &sc->sc_ic;
     struct _ifnet *ifp = IC2IFP(ic);
     int err;
-    static int attached;
     
     err = iwm_prepare_card_hw(sc);
     if (err) {
         XYLog("%s: could not initialize hardware\n", DEVNAME(sc));
         return err;
     }
-    
-    if (attached) {
+
+    if (sc->sc_preinit_done) {
         /* Update MAC in case the upper layers changed it. */
         IEEE80211_ADDR_COPY(sc->sc_ic.ic_myaddr,
                             ((struct arpcom *)ifp)->ac_enaddr);
@@ -4394,8 +4393,7 @@ iwm_preinit(struct iwm_softc *sc)
     if (err)
         return err;
     
-    /* Print version info and MAC address on first successful fw load. */
-    attached = 1;
+    /* Print version info and MAC address after a successful fw load. */
     XYLog("%s: hw rev 0x%x, fw ver %s, address %s\n",
           DEVNAME(sc), sc->sc_hw_rev & IWM_CSR_HW_REV_TYPE_MSK,
           sc->sc_fwver, ether_sprintf(sc->sc_nvm.hw_addr));
@@ -4425,7 +4423,8 @@ iwm_preinit(struct iwm_softc *sc)
     
     iwm_rs_free(sc);
     iwm_rs_alloc(sc);
-    
+
+    sc->sc_preinit_done = true;
     return 0;
 }
 
@@ -4457,7 +4456,9 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
     struct _ifnet *ifp = &ic->ic_if;
     int err;
     int txq_i, i, j;
-    
+
+    sc->sc_preinit_done = false;
+    sc->sc_taskq_initialized = false;
     sc->sc_pct = pa->pa_pc;
     sc->sc_pcitag = pa->pa_tag;
     sc->sc_dmat = pa->pa_dmat;
@@ -4539,7 +4540,13 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
         sc->sc_ih = IOFilterInterruptEventSource::filterInterruptEventSource(this,
                                                                              (IOInterruptEventSource::Action)&ItlIwm::iwm_intr, &ItlIwm::intrFilter
                                                                              , pa->pa_tag, msiIntrIndex);
-    if (sc->sc_ih == NULL || pa->workloop->addEventSource(sc->sc_ih) != kIOReturnSuccess) {
+    if (sc->sc_ih == NULL) {
+        XYLog("%s: can't establish interrupt\n", DEVNAME(sc));
+        return false;
+    }
+    if (pa->workloop->addEventSource(sc->sc_ih) != kIOReturnSuccess) {
+        sc->sc_ih->release();
+        sc->sc_ih = NULL;
         XYLog("%s: can't establish interrupt\n", DEVNAME(sc));
         return false;
     }
@@ -4734,7 +4741,7 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
     err = iwm_dma_contig_alloc(sc->sc_dmat, &sc->kw_dma, 4096, 4096);
     if (err) {
         XYLog("%s: could not allocate keep warm page\n", DEVNAME(sc));
-        goto fail1;
+        return false;
     }
 
     /* Allocate interrupt cause table (ICT).*/
@@ -4742,7 +4749,7 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
         IWM_ICT_SIZE, 1<<IWM_ICT_PADDR_SHIFT);
     if (err) {
         XYLog("%s: could not allocate ICT table\n", DEVNAME(sc));
-        goto fail2;
+        return false;
     }
 
     /* TX scheduler rings must be aligned on a 1KB boundary. */
@@ -4751,7 +4758,7 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
     if (err) {
         XYLog("%s: could not allocate TX scheduler rings\n",
             DEVNAME(sc));
-        goto fail3;
+        return false;
     }
 
     for (txq_i = 0; txq_i < nitems(sc->txq); txq_i++) {
@@ -4759,20 +4766,22 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
         if (err) {
             XYLog("%s: could not allocate TX ring %d\n",
                 DEVNAME(sc), txq_i);
-            goto fail4;
+            return false;
         }
     }
 
     err = iwm_alloc_rx_ring(sc, &sc->rxq);
     if (err) {
         XYLog("%s: could not allocate RX ring\n", DEVNAME(sc));
-        goto fail4;
+        return false;
     }
     
-    taskq_init();
+    if (!taskq_init())
+        return false;
+    sc->sc_taskq_initialized = true;
     sc->sc_nswq = taskq_create("iwmns", 1, IPL_NET, 0);
     if (sc->sc_nswq == NULL)
-        goto fail4;
+        return false;
     
     XYLog("config ieee80211\n");
     
@@ -4878,30 +4887,12 @@ iwm_attach(struct iwm_softc *sc, struct pci_attach_args *pa)
      * firmware from disk. Postpone until mountroot is done.
      */
     //    config_mountroot(self, iwm_attach_hook);
-    if (iwm_preinit(sc)) {
-        goto fail5;
-    }
+    if (iwm_preinit(sc))
+        return false;
     
     XYLog("attach succeed.\n");
     
     return true;
-    
-fail5:
-    for (i = 0; i < nitems(sc->sc_rxba_data); i++) {
-        struct iwm_rxba_data *rxba = &sc->sc_rxba_data[i];
-        iwm_clear_reorder_buffer(sc, rxba);
-    }
-fail4:    while (--txq_i >= 0)
-    iwm_free_tx_ring(sc, &sc->txq[txq_i]);
-    iwm_free_rx_ring(sc, &sc->rxq);
-    iwm_dma_contig_free(&sc->sched_dma);
-fail3:    if (sc->ict_dma.vaddr != NULL)
-    iwm_dma_contig_free(&sc->ict_dma);
-    
-fail2:    iwm_dma_contig_free(&sc->kw_dma);
-fail1:    iwm_dma_contig_free(&sc->fw_dma);
-    XYLog("attach failed.\n");
-    return false;
 }
 
 #if NBPFILTER > 0
