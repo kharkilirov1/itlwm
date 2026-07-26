@@ -36,6 +36,7 @@ CLAIM = (
     "ABI skeleton only: this gate does not establish functional WCL scan, "
     "association, key installation, or device runtime."
 )
+LINKAGE_TIMEOUT_SECONDS = 180
 
 CONTROLLER_PURE_METHODS: Mapping[int, str] = {
     394: "isCommandProhibited",
@@ -407,7 +408,9 @@ def _find_kext_executable(kext_path: Path) -> Path:
     return executable
 
 
-def _run(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
+def _run(
+    command: Sequence[str], timeout_seconds: int | None = None
+) -> subprocess.CompletedProcess[str]:
     try:
         return subprocess.run(
             list(command),
@@ -416,7 +419,18 @@ def _run(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
             stderr=subprocess.STDOUT,
             text=True,
             errors="replace",
+            timeout=timeout_seconds,
         )
+    except subprocess.TimeoutExpired as exc:
+        output = exc.stdout or ""
+        if isinstance(output, bytes):
+            output = output.decode("utf-8", errors="replace")
+        output += (
+            f"\ncommand timed out after {timeout_seconds} seconds: "
+            + " ".join(command)
+            + "\n"
+        )
+        return subprocess.CompletedProcess(list(command), 124, output)
     except OSError as exc:
         raise GateFailure(f"cannot run {command[0]}: {exc}") from exc
 
@@ -505,32 +519,53 @@ def verify_binary(kext_path: Path, report_dir: Path) -> None:
             f"nm -u failed with exit code {undefined_result.returncode}"
         )
 
+    linkage_tool = "unavailable"
+    linkage_status = "unavailable"
+    linkage_result: subprocess.CompletedProcess[str] | None = None
+    linkage_report = report_dir / "linkage-undefined-symbols.txt"
+    kmutil_path = shutil.which("kmutil")
     kextlibs_path = shutil.which("kextlibs")
-    kextlibs_status = "unavailable"
-    kextlibs_result: subprocess.CompletedProcess[str] | None = None
-    if kextlibs_path:
-        kextlibs_result = _run(
-            [kextlibs_path, "-undef-symbols", str(kext_path)]
+    if kmutil_path:
+        linkage_tool = "kmutil libraries"
+        linkage_result = _run(
+            [
+                kmutil_path,
+                "libraries",
+                "--arch",
+                "x86_64",
+                "--bundle-path",
+                str(kext_path),
+                "--undef-symbols",
+                "--unsupported",
+            ],
+            timeout_seconds=LINKAGE_TIMEOUT_SECONDS,
         )
-        _write_text(
-            report_dir / "kextlibs-undef-symbols.txt",
-            kextlibs_result.stdout,
+        _write_text(linkage_report, linkage_result.stdout)
+    elif kextlibs_path:
+        linkage_tool = "kextlibs"
+        linkage_result = _run(
+            [kextlibs_path, "-undef-symbols", "-unsupported", str(kext_path)],
+            timeout_seconds=LINKAGE_TIMEOUT_SECONDS,
         )
+        _write_text(linkage_report, linkage_result.stdout)
     else:
         _write_text(
-            report_dir / "kextlibs-undef-symbols.txt",
-            "kextlibs is unavailable on this runner; check skipped.\n",
+            linkage_report,
+            "kmutil and kextlibs are unavailable on this runner; check skipped.\n",
         )
 
     _verify_symbol_text(all_result.stdout, undefined_result.stdout)
-    if kextlibs_result is not None:
-        if kextlibs_result.returncode != 0:
-            raise GateFailure(
-                "kextlibs -undef-symbols failed with exit code "
-                f"{kextlibs_result.returncode}; see "
-                f"{report_dir / 'kextlibs-undef-symbols.txt'}"
-            )
-        kextlibs_status = "pass"
+    if linkage_result is None:
+        raise GateFailure(
+            "kmutil and kextlibs are unavailable; full linkage resolution "
+            f"cannot be verified; see {linkage_report}"
+        )
+    if linkage_result.returncode != 0:
+        raise GateFailure(
+            f"{linkage_tool} failed with exit code "
+            f"{linkage_result.returncode}; see {linkage_report}"
+        )
+    linkage_status = "pass"
 
     _write_claim_marker(report_dir)
     _write_json(
@@ -542,14 +577,17 @@ def verify_binary(kext_path: Path, report_dir: Path) -> None:
             "expected_undefined_imports": list(EXPECTED_NETWORK_IMPORTS),
             "expected_skywalk_imports": list(EXPECTED_SKYWALK_IMPORTS),
             "forbidden_imports": list(FORBIDDEN_IMPORTS),
-            "kextlibs": kextlibs_status,
+            "linkage": {
+                "tool": linkage_tool,
+                "status": linkage_status,
+            },
             "status": "pass",
         },
     )
     print(
         "Sequoia binary ABI gate: PASS "
         "(HAL resolved; IONetworkController slots 6/7 imports verified; "
-        f"kextlibs={kextlibs_status})"
+        f"linkage={linkage_tool}:{linkage_status})"
     )
 
 
@@ -568,7 +606,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     binary = subparsers.add_parser(
-        "binary", help="verify linked kext symbols and run kextlibs when present"
+        "binary",
+        help="verify linked kext symbols and resolve imports with kmutil/kextlibs",
     )
     binary.add_argument("--kext", type=Path, required=True)
     binary.add_argument(
